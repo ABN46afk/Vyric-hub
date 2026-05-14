@@ -1,1 +1,379 @@
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local TweenService = game:GetService("TweenService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+local GuiService = game:GetService("GuiService")
+
+local Aimlock = false
+local FOV = 120
+local TargetPart = "Head"
+local Smoothness = 0.1
+local AimKey = Enum.KeyCode.E
+local ESPEnabled = false
+local TracersEnabled = false
+local BoxESPEnabled = false
+local NameESPEnabled = false
+local HealthESPEnabled = false
+local TeamCheckEnabled = true
+local WallCheckEnabled = true
+local TriggerBotEnabled = false
+local TriggerBotDelay = 0.1
+local SilentAimEnabled = false
+local PredictionEnabled = false
+local PredictionAmount = 0.165
+local FOVVisible = true
+local ChamsEnabled = false
+
+local SkyboxIds = {
+    ["Sunset"] = "rbxassetid://6444884337",
+    ["Night"] = "rbxassetid://16188270489",
+    ["Space"] = "rbxassetid://16188270612",
+    ["Purple Galaxy"] = "rbxassetid://16188270785",
+    ["Blue Galaxy"] = "rbxassetid://16188270965",
+    ["Red Galaxy"] = "rbxassetid://16188271097",
+    ["Green Galaxy"] = "rbxassetid://16188271236",
+    ["Orange Galaxy"] = "rbxassetid://16188271378",
+    ["Pink Galaxy"] = "rbxassetid://16188271550",
+    ["Yellow Galaxy"] = "rbxassetid://16188271715",
+    ["Custom 1"] = "rbxassetid://16188271879",
+    ["Custom 2"] = "rbxassetid://16188272024",
+    ["Custom 3"] = "rbxassetid://16188272208",
+    ["Custom 4"] = "rbxassetid://16188272373",
+    ["Custom 5"] = "rbxassetid://16188272544"
+}
+
+local SkyboxNames = {"Sunset", "Night", "Space", "Purple Galaxy", "Blue Galaxy", "Red Galaxy", "Green Galaxy", "Orange Galaxy", "Pink Galaxy", "Yellow Galaxy", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"}
+local CurrentSkyIndex = 1
+local ESPBoxes = {}
+local ESPNames = {}
+local ESPHealth = {}
+local Tracers = {}
+local Chams = {}
+local SkysEnabled = false
+local defaultSky = Instance.new("Sky")
+defaultSky.SkyboxBk = SkyboxIds["Sunset"]
+defaultSky.SkyboxDn = SkyboxIds["Sunset"]
+defaultSky.SkyboxFt = SkyboxIds["Sunset"]
+defaultSky.SkyboxLf = SkyboxIds["Sunset"]
+defaultSky.SkyboxRt = SkyboxIds["Sunset"]
+defaultSky.SkyboxUp = SkyboxIds["Sunset"]
+defaultSky.Parent = Lighting
+
+local Window = WindUI:CreateWindow({
+    Title = "Azic Hub",
+    Icon = "cool",
+    Author = "by BROS GANG",
+    Folder = "AZIC",
+    Size = UDim2.fromOffset(620, 550),
+    Transparent = true,
+    Theme = "Dark",
+})
+
+local function SetBackgroundImage()
+    local bgImage = "https://photos.app.goo.gl/qsCDGZ6vVQVcpLEE8"
+    local success, result = pcall(function()
+        return game:GetService("ContentProvider"):PreloadAsync({bgImage})
+    end)
+    local bg = Instance.new("ImageLabel")
+    bg.Name = "AzicHubBackground"
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.Position = UDim2.new(0, 0, 0, 0)
+    bg.BackgroundTransparency = 1
+    bg.Image = bgImage
+    bg.ScaleType = Enum.ScaleType.Crop
+    bg.ImageTransparency = 0.85
+    bg.ZIndex = 0
+    local mainGui = CoreGui:FindFirstChild("WindUI")
+    if mainGui then
+        local frame = mainGui:FindFirstChild("MainFrame") or mainGui:FindFirstChildWhichIsA("Frame")
+        if frame then bg.Parent = frame else bg.Parent = mainGui end
+    end
+    task.spawn(function()
+        local attempts = 0
+        while not bg.Parent and attempts < 20 do
+            task.wait(1)
+            attempts = attempts + 1
+            local gui = CoreGui:FindFirstChild("WindUI")
+            if gui then
+                local f = gui:FindFirstChild("MainFrame") or gui:FindFirstChildWhichIsA("Frame")
+                if f then bg.Parent = f else bg.Parent = gui end
+            end
+        end
+    end)
+end
+
+task.spawn(SetBackgroundImage)
+
+local AimTab = Window:Tab({Title = "Aimlock", Icon = "crosshair"})
+local ESPTab = Window:Tab({Title = "ESP", Icon = "eye"})
+local SkyTab = Window:Tab({Title = "Skys", Icon = "sun"})
+local VisualTab = Window:Tab({Title = "Visuals", Icon = "monitor"})
+local MiscTab = Window:Tab({Title = "Misc", Icon = "🔍"})
+
+local Circle = Drawing.new("Circle")
+Circle.Visible = FOVVisible
+Circle.Color = Color3.fromRGB(255, 255, 255)
+Circle.Thickness = 2
+Circle.NumSides = 100
+Circle.Filled = false
+Circle.Transparency = 1
+Circle.Radius = FOV
+
+local FOVColor = Color3.fromRGB(255, 255, 255)
+
+RunService.RenderStepped:Connect(function()
+    Circle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    Circle.Radius = FOV
+    Circle.Color = FOVColor
+    Circle.Visible = FOVVisible
+end)
+local function IsVisible(Target)
+    if not WallCheckEnabled then return true end
+    local Origin = Camera.CFrame.Position
+    local Direction = (Target.Position - Origin).Unit * 5000
+    local Params = RaycastParams.new()
+    Params.FilterType = Enum.RaycastFilterType.Blacklist
+    Params.FilterDescendantsInstances = {LocalPlayer.Character}
+    Params.IgnoreWater = true
+    local Result = workspace:Raycast(Origin, Direction, Params)
+    if Result then return Result.Instance:IsDescendantOf(Target.Parent) end
+    return true
+end
+
+local function IsEnemy(player)
+    if not TeamCheckEnabled then return true end
+    if LocalPlayer.Team and player.Team then return LocalPlayer.Team ~= player.Team end
+    return true
+end
+
+local function GetClosestPlayer()
+    local Closest = nil
+    local Shortest = math.huge
+    for _, Player in pairs(Players:GetPlayers()) do
+        if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild(TargetPart) and Player.Character:FindFirstChild("Humanoid") and Player.Character.Humanoid.Health > 0 and IsEnemy(Player) then
+            local Part = Player.Character[TargetPart]
+            if IsVisible(Part) then
+                local Pos, Visible = Camera:WorldToViewportPoint(Part.Position)
+                if Visible then
+                    local Distance = (Vector2.new(Pos.X, Pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
+                    if Distance <= FOV and Distance < Shortest then Shortest = Distance; Closest = Part end
+                end
+            end
+        end
+    end
+    return Closest
+end
+
+local function SmoothAim(targetPos)
+    local currentPos = Camera.CFrame.Position
+    local targetCFrame = CFrame.new(currentPos, targetPos)
+    return Camera.CFrame:Lerp(targetCFrame, Smoothness)
+end
+
+local oldNamecall
+local function SetupSilentAim()
+    if SilentAimEnabled then
+        oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+            local method = getnamecallmethod()
+            local args = {...}
+            if method == "FindPartOnRayWithIgnoreList" or method == "Raycast" then
+                local target = GetClosestPlayer()
+                if target and Aimlock then
+                    local origin = Camera.CFrame.Position
+                    local direction = (target.Position - origin).Unit
+                    if PredictionEnabled then
+                        local character = target.Parent
+                        local humanoidRoot = character and character:FindFirstChild("HumanoidRootPart")
+                        if humanoidRoot then direction = (target.Position + (humanoidRoot.Velocity * PredictionAmount) - origin).Unit end
+                    end
+                    local ray = Ray.new(origin, direction * 5000)
+                    return ray, target.Position, target, direction
+                end
+            end
+            return oldNamecall(self, ...)
+        end)
+    elseif oldNamecall then restorefunction(oldNamecall); oldNamecall = nil end
+end
+
+local lastShot = 0
+local function TriggerBot()
+    if not TriggerBotEnabled then return end
+    local target = GetClosestPlayer()
+    if target and tick() - lastShot > TriggerBotDelay then
+        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+        task.wait(0.01)
+        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+        lastShot = tick()
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if Aimlock then
+        local Target = GetClosestPlayer()
+        if Target then
+            local targetPos = Target.Position
+            if PredictionEnabled then
+                local character = Target.Parent
+                local humanoidRoot = character and character:FindFirstChild("HumanoidRootPart")
+                if humanoidRoot then targetPos = targetPos + (humanoidRoot.Velocity * PredictionAmount) end
+            end
+            if Smoothness > 0 then Camera.CFrame = SmoothAim(targetPos) else Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos) end
+        end
+    end
+    TriggerBot()
+end)
+local function CreateESPBox(player)
+    local box = Drawing.new("Square"); box.Visible = false; box.Color = Color3.new(1, 0, 0); box.Thickness = 2; box.Filled = false; return box
+end
+local function CreateESPName(player)
+    local text = Drawing.new("Text"); text.Visible = false; text.Color = Color3.new(1, 1, 1); text.Size = 14; text.Center = true; text.Outline = true; text.Text = player.Name; return text
+end
+local function CreateESPHealth(player)
+    local text = Drawing.new("Text"); text.Visible = false; text.Color = Color3.new(0, 1, 0); text.Size = 12; text.Center = true; text.Outline = true; return text
+end
+local function CreateTracer(player)
+    local line = Drawing.new("Line"); line.Visible = false; line.Color = Color3.new(1, 0, 0); line.Thickness = 1; return line
+end
+local function CreateChams(player)
+    local highlight = Instance.new("Highlight"); highlight.Name = "ESPChams"; highlight.FillColor = Color3.new(1, 0, 0); highlight.FillTransparency = 0.5; highlight.OutlineColor = Color3.new(1, 1, 1); highlight.OutlineTransparency = 0; highlight.Parent = player.Character; return highlight
+end
+
+local function UpdateESP()
+    for player, box in pairs(ESPBoxes) do box.Visible = false end
+    for player, name in pairs(ESPNames) do name.Visible = false end
+    for player, health in pairs(ESPHealth) do health.Visible = false end
+    for player, tracer in pairs(Tracers) do tracer.Visible = false end
+    if not ESPEnabled and not TracersEnabled then return end
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 and IsEnemy(player) then
+            local root = player.Character.HumanoidRootPart; local humanoid = player.Character.Humanoid; local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
+            if onScreen then
+                if ESPEnabled and BoxESPEnabled then
+                    local box = ESPBoxes[player]; if not box then box = CreateESPBox(player); ESPBoxes[player] = box end
+                    local size = Vector2.new(2000 / pos.Z, 3000 / pos.Z); box.Size = size; box.Position = Vector2.new(pos.X - size.X/2, pos.Y - size.Y/2); box.Visible = true
+                    local healthPercent = humanoid.Health / humanoid.MaxHealth; box.Color = Color3.new(1 - healthPercent, healthPercent, 0)
+                end
+                if ESPEnabled and NameESPEnabled then
+                    local name = ESPNames[player]; if not name then name = CreateESPName(player); ESPNames[player] = name end; name.Position = Vector2.new(pos.X, pos.Y - 40); name.Visible = true
+                end
+                if ESPEnabled and HealthESPEnabled then
+                    local healthText = ESPHealth[player]; if not healthText then healthText = CreateESPHealth(player); ESPHealth[player] = healthText end
+                    healthText.Text = math.floor(humanoid.Health) .. "/" .. math.floor(humanoid.MaxHealth); healthText.Position = Vector2.new(pos.X, pos.Y - 25)
+                    local healthPercent = humanoid.Health / humanoid.MaxHealth; healthText.Color = Color3.new(1 - healthPercent, healthPercent, 0); healthText.Visible = true
+                end
+                if TracersEnabled then
+                    local tracer = Tracers[player]; if not tracer then tracer = CreateTracer(player); Tracers[player] = tracer end
+                    tracer.From = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y); tracer.To = Vector2.new(pos.X, pos.Y); tracer.Visible = true
+                end
+                if ChamsEnabled then
+                    local cham = Chams[player]; if not cham then cham = CreateChams(player); Chams[player] = cham end; cham.Enabled = true
+                    local healthPercent = humanoid.Health / humanoid.MaxHealth; cham.FillColor = Color3.new(1 - healthPercent, healthPercent, 0)
+                end
+            else
+                if ESPBoxes[player] then ESPBoxes[player].Visible = false end; if ESPNames[player] then ESPNames[player].Visible = false end
+                if ESPHealth[player] then ESPHealth[player].Visible = false end; if Tracers[player] then Tracers[player].Visible = false end; if Chams[player] then Chams[player].Enabled = false end
+            end
+        else
+            if ESPBoxes[player] then ESPBoxes[player].Visible = false end; if ESPNames[player] then ESPNames[player].Visible = false end
+            if ESPHealth[player] then ESPHealth[player].Visible = false end; if Tracers[player] then Tracers[player].Visible = false end; if Chams[player] then Chams[player]:Destroy(); Chams[player] = nil end
+        end
+    end
+end
+
+local function SetSkybox(id)
+    for _, v in pairs(Lighting:GetChildren()) do if v:IsA("Sky") then v:Destroy() end end
+    local newSky = Instance.new("Sky"); newSky.Name = "CustomSkybox"
+    newSky.SkyboxBk = id; newSky.SkyboxDn = id; newSky.SkyboxFt = id; newSky.SkyboxLf = id; newSky.SkyboxRt = id; newSky.SkyboxUp = id; newSky.Parent = Lighting
+end
+
+local function CycleSkybox(forward)
+    if forward then CurrentSkyIndex = CurrentSkyIndex + 1; if CurrentSkyIndex > #SkyboxNames then CurrentSkyIndex = 1 end
+    else CurrentSkyIndex = CurrentSkyIndex - 1; if CurrentSkyIndex < 1 then CurrentSkyIndex = #SkyboxNames end end
+    SetSkybox(SkyboxIds[SkyboxNames[CurrentSkyIndex]])
+end
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == AimKey then
+        Aimlock = not Aimlock
+        WindUI:Notify({Title = "Aimlock", Content = "Aimlock " .. (Aimlock and "Enabled" or "Disabled"), Duration = 2})
+    end
+    if input.KeyCode == Enum.KeyCode.Insert then Window:Toggle() end
+end)
+
+RunService.RenderStepped:Connect(UpdateESP)
+
+local function CleanupESP()
+    for _, box in pairs(ESPBoxes) do box:Remove() end
+    for _, name in pairs(ESPNames) do name:Remove() end
+    for _, health in pairs(ESPHealth) do health:Remove() end
+    for _, tracer in pairs(Tracers) do tracer:Remove() end
+    for _, cham in pairs(Chams) do cham:Destroy() end
+    ESPBoxes = {}; ESPNames = {}; ESPHealth = {}; Tracers = {}; Chams = {}
+end
+
+Players.PlayerRemoving:Connect(function(player)
+    if ESPBoxes[player] then ESPBoxes[player]:Remove(); ESPBoxes[player] = nil end
+    if ESPNames[player] then ESPNames[player]:Remove(); ESPNames[player] = nil end
+    if ESPHealth[player] then ESPHealth[player]:Remove(); ESPHealth[player] = nil end
+    if Tracers[player] then Tracers[player]:Remove(); Tracers[player] = nil end
+    if Chams[player] then Chams[player]:Destroy(); Chams[player] = nil end
+end)
+
+AimTab:Toggle({Title = "Aimlock", Value = false, Callback = function(v) Aimlock = v end})
+AimTab:Slider({Title = "FOV Size", Value = {Min = 10, Max = 500, Default = 120}, Callback = function(v) FOV = v end})
+AimTab:Slider({Title = "Smoothness", Value = {Min = 0, Max = 1, Default = 0.1, Decimals = 2}, Callback = function(v) Smoothness = v end})
+AimTab:Slider({Title = "Prediction Amount", Value = {Min = 0, Max = 0.5, Default = 0.165, Decimals = 3}, Callback = function(v) PredictionAmount = v end})
+AimTab:Dropdown({Title = "Target Part", Values = {"Head", "HumanoidRootPart", "Torso"}, Value = "Head", Callback = function(v) TargetPart = v end})
+AimTab:Keybind({Title = "Aimlock Key", Value = AimKey, Callback = function(v) AimKey = v end})
+AimTab:Toggle({Title = "Show FOV Circle", Value = true, Callback = function(v) FOVVisible = v end})
+AimTab:Toggle({Title = "Team Check", Value = true, Callback = function(v) TeamCheckEnabled = v end})
+AimTab:Toggle({Title = "Wall Check", Value = true, Callback = function(v) WallCheckEnabled = v end})
+AimTab:Toggle({Title = "Silent Aim", Value = false, Callback = function(v) SilentAimEnabled = v; SetupSilentAim() end})
+AimTab:Toggle({Title = "Prediction", Value = false, Callback = function(v) PredictionEnabled = v end})
+AimTab:Toggle({Title = "Trigger Bot", Value = false, Callback = function(v) TriggerBotEnabled = v end})
+AimTab:Slider({Title = "Trigger Delay", Value = {Min = 0.01, Max = 1, Default = 0.1, Decimals = 2}, Callback = function(v) TriggerBotDelay = v end})
+
+ESPTab:Toggle({Title = "Enable ESP", Value = false, Callback = function(v) ESPEnabled = v; if not v then CleanupESP() end end})
+ESPTab:Toggle({Title = "Box ESP", Value = false, Callback = function(v) BoxESPEnabled = v end})
+ESPTab:Toggle({Title = "Name ESP", Value = false, Callback = function(v) NameESPEnabled = v end})
+ESPTab:Toggle({Title = "Health ESP", Value = false, Callback = function(v) HealthESPEnabled = v end})
+ESPTab:Toggle({Title = "Tracers", Value = false, Callback = function(v) TracersEnabled = v end})
+ESPTab:Toggle({Title = "Chams", Value = false, Callback = function(v) ChamsEnabled = v; if not v then for _, cham in pairs(Chams) do cham:Destroy() end; Chams = {} end end})
+SkyTab:Toggle({Title = "Enable Skys", Value = false, Callback = function(v)
+    SkysEnabled = v
+    if v then SetSkybox(SkyboxIds[SkyboxNames[CurrentSkyIndex]]) else local oldSky = Lighting:FindFirstChild("CustomSkybox"); if oldSky then oldSky:Destroy() end end
+end})
+SkyTab:Button({Title = "Next Sky", Callback = function() if SkysEnabled then CycleSkybox(true) end end})
+SkyTab:Button({Title = "Previous Sky", Callback = function() if SkysEnabled then CycleSkybox(false) end end})
+SkyTab:Dropdown({Title = "Select Sky", Values = SkyboxNames, Value = "Sunset", Callback = function(v)
+    for i, name in ipairs(SkyboxNames) do if name == v then CurrentSkyIndex = i; break end end
+    if SkysEnabled then SetSkybox(SkyboxIds[v]) end
+end})
+
+VisualTab:Colorpicker({Title = "FOV Color", Value = Color3.fromRGB(255, 255, 255), Callback = function(v) FOVColor = v end})
+VisualTab:Toggle({Title = "No Fog", Value = false, Callback = function(v) if v then Lighting.FogEnd = 100000 else Lighting.FogEnd = 1000 end end})
+VisualTab:Toggle({Title = "Full Bright", Value = false, Callback = function(v) if v then Lighting.Brightness = 2; Lighting.GlobalShadows = false else Lighting.Brightness = 1; Lighting.GlobalShadows = true end end})
+VisualTab:Slider({Title = "Brightness", Value = {Min = 0, Max = 10, Default = 1, Decimals = 1}, Callback = function(v) Lighting.Brightness = v end})
+
+MiscTab:Button({Title = "Refresh ESP", Callback = function() CleanupESP(); WindUI:Notify({Title = "ESP", Content = "ESP refreshed!", Duration = 2}) end})
+MiscTab:Button({Title = "Copy Discord", Callback = function() setclipboard("https://discord.gg/azichub"); WindUI:Notify({Title = "Discord", Content = "Discord link copied!", Duration = 3}) end})
+MiscTab:Button({Title = "Unload Script", Callback = function()
+    CleanupESP(); Circle:Remove()
+    if oldNamecall then restorefunction(oldNamecall) end
+    Window:Destroy()
+    WindUI:Notify({Title = "Unloaded", Content = "Script unloaded successfully!", Duration = 3})
+end})
+
+WindUI:Notify({Title = "Azic Hub v3.0", Content = "Loaded Successfully!\nAimlock Key: " .. tostring(AimKey) .. "\nMenu Toggle: Insert", Duration = 6})
+
+game:GetService("CoreGui").ChildRemoved:Connect(function(child)
+    if child.Name == "WindUI" then CleanupESP(); Circle:Remove(); if oldNamecall then restorefunction(oldNamecall) end end
+end)
