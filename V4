@@ -5,14 +5,8 @@
 ╚══════════════════════════════════════════════════════════════╝
 --]]
 
--- ============================================================
--- [1] UI LIBRARY
--- ============================================================
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
--- ============================================================
--- [2] SERVICES
--- ============================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
@@ -29,9 +23,6 @@ local StarterGui = game:GetService("StarterGui")
 local Teams = game:GetService("Teams")
 local Mouse = LocalPlayer:GetMouse()
 
--- ============================================================
--- [3] CONFIG - ALLE EINSTELLUNGEN
--- ============================================================
 local Config = {
     Aimlock = false, FOV = 120, TargetPart = "Head", Smoothness = 0.1,
     AimKey = Enum.KeyCode.E, FOVVisible = true, FOVCircleFilled = false,
@@ -48,8 +39,7 @@ local Config = {
     ESPColor = Color3.fromRGB(255, 0, 0),
     TeamCheckEnabled = true, WallCheckEnabled = true,
     FriendOnlyMode = false, WhitelistMode = false, WhitelistedPlayers = {},
-    DistanceESPEnabled = false, XRayEnabled = false,
-    SkysEnabled = false,
+    DistanceESPEnabled = false, XRayEnabled = false, SkysEnabled = false,
     FlyEnabled = false, FlySpeed = 50,
     AirJumpEnabled = false, NoFallDamageEnabled = false, ThirdPersonEnabled = false,
     TeleportToCursorEnabled = false, TeleportKey = Enum.KeyCode.F,
@@ -62,9 +52,6 @@ local Config = {
     AntiCheatBypassEnabled = false,
 }
 
--- ============================================================
--- [4] SKYBOX DATEN
--- ============================================================
 local SkyboxIds = {
     Sunset = "rbxassetid://6444884337", Night = "rbxassetid://16188270489",
     Space = "rbxassetid://16188270612", ["Purple Galaxy"] = "rbxassetid://16188270785",
@@ -78,27 +65,19 @@ local SkyboxIds = {
 local SkyboxNames = {"Sunset","Night","Space","Purple Galaxy","Blue Galaxy","Red Galaxy","Green Galaxy","Orange Galaxy","Pink Galaxy","Yellow Galaxy","Custom 1","Custom 2","Custom 3","Custom 4","Custom 5"}
 local CurrentSkyIndex = 1
 local ESPBoxes, ESPNames, ESPHealth, Tracers, Chams = {}, {}, {}, {}, {}
--- ============================================================
--- [5] DEFAULT SKY
--- ============================================================
+
 local defaultSky = Instance.new("Sky")
 for _, face in pairs({"Bk","Dn","Ft","Lf","Rt","Up"}) do
     defaultSky["Skybox"..face] = SkyboxIds["Sunset"]
 end
 defaultSky.Parent = Lighting
 
--- ============================================================
--- [6] WINDOW
--- ============================================================
 local Window = WindUI:CreateWindow({
     Title = "Azic Hub", Icon = "cool", Author = "by BROS GANG",
     Folder = "AZIC", Size = UDim2.fromOffset(620, 550),
     Transparent = true, Theme = "Dark",
 })
 
--- ============================================================
--- [7] BACKGROUND IMAGE (Imgur)
--- ============================================================
 task.spawn(function()
     local bg = Instance.new("ImageLabel")
     bg.Name = "AzicHubBackground"
@@ -119,9 +98,6 @@ task.spawn(function()
     end
 end)
 
--- ============================================================
--- [8] TABS
--- ============================================================
 local AimTab = Window:Tab({Title = "Aimlock", Icon = "crosshair"})
 local ESPTab = Window:Tab({Title = "ESP", Icon = "eye"})
 local SkyTab = Window:Tab({Title = "Skys", Icon = "sun"})
@@ -129,9 +105,7 @@ local VisualTab = Window:Tab({Title = "Visuals", Icon = "monitor"})
 local MiscTab = Window:Tab({Title = "Misc", Icon = "settings"})
 local PlayerTab = Window:Tab({Title = "Player", Icon = "user"})
 local FarmTab = Window:Tab({Title = "Farm", Icon = "zap"})
--- ============================================================
--- [9] FOV CIRCLE
--- ============================================================
+
 local Circle = Drawing.new("Circle")
 Circle.Visible = Config.FOVVisible; Circle.Color = Config.AimbotFOVColor
 Circle.Thickness = 2; Circle.NumSides = 100; Circle.Filled = false
@@ -144,9 +118,6 @@ RunService.RenderStepped:Connect(function()
     Circle.Transparency = Config.FOVCircleFilled and 0.3 or 1
 end)
 
--- ============================================================
--- [10] HELPER FUNCTIONS
--- ============================================================
 function IsWhitelisted(p)
     if Config.WhitelistMode then return Config.WhitelistedPlayers[p.Name] == true end
     return true
@@ -191,11 +162,7 @@ function GetClosestPlayer()
         end
     end; return Closest
 end
--- ============================================================
--- [11] COMBAT FEATURES
--- ============================================================
 
--- Silent Aim
 local oldNamecall
 function SetupSilentAim()
     if Config.SilentAimEnabled then
@@ -217,7 +184,6 @@ function SetupSilentAim()
     elseif oldNamecall then restorefunction(oldNamecall); oldNamecall = nil end
 end
 
--- Trigger Bot
 local lastShot = 0
 function TriggerBot()
     if not Config.TriggerBotEnabled then return end
@@ -229,7 +195,6 @@ function TriggerBot()
     end
 end
 
--- Aim Assist
 function AimAssist()
     if not Config.AimAssistEnabled then return end
     local target = GetClosestPlayer()
@@ -244,14 +209,12 @@ function AimAssist()
     end
 end
 
--- No Recoil
 function NoRecoil()
     if not Config.NoRecoilEnabled then return end
     local c = LocalPlayer.Character
     if c and c:FindFirstChild("Humanoid") then c.Humanoid.CameraOffset = Vector3.new(0,0,0) end
 end
 
--- Spinbot
 local spinAngle = 0
 function Spinbot()
     if not Config.SpinbotEnabled then return end
@@ -260,17 +223,12 @@ function Spinbot()
     if c and c:FindFirstChild("HumanoidRootPart") then c.HumanoidRootPart.Orientation = Vector3.new(0, spinAngle, 0) end
 end
 
--- Anti Aim
 function AntiAim()
     if not Config.AntiAimEnabled then return end
     local c = LocalPlayer.Character
     if c and c:FindFirstChild("HumanoidRootPart") then c.HumanoidRootPart.Orientation = Vector3.new(Config.AntiAimPitch, tick()*100%360, 0) end
 end
--- ============================================================
--- [12] MOVEMENT FEATURES
--- ============================================================
 
--- Noclip
 local noclipConnection
 function SetupNoclip()
     if Config.NoclipEnabled then
@@ -281,7 +239,6 @@ function SetupNoclip()
     elseif noclipConnection then noclipConnection:Disconnect(); noclipConnection = nil end
 end
 
--- Infinite Jump / Air Jump
 local jumpCount = 0
 function HandleJump()
     if not Config.InfiniteJumpEnabled and not Config.AirJumpEnabled then return end
@@ -299,7 +256,6 @@ function HandleJump()
     end
 end
 
--- Fly (WASD + Space + Shift)
 local flyConnection, flyBV, flyBG
 function SetupFly()
     if Config.FlyEnabled then
@@ -327,14 +283,12 @@ function SetupFly()
     end
 end
 
--- No Fall Damage
 function NoFallDamage()
     if not Config.NoFallDamageEnabled then return end
     local c = LocalPlayer.Character
     if c and c:FindFirstChild("Humanoid") then c.Humanoid.FallDamage = 0 end
 end
 
--- Third Person
 function SetupThirdPerson()
     local c = LocalPlayer.Character
     if c and c:FindFirstChild("Humanoid") then
@@ -342,7 +296,6 @@ function SetupThirdPerson()
     end
 end
 
--- Teleport to Cursor (F)
 function TeleportToCursor()
     if not Config.TeleportToCursorEnabled then return end
     local c = LocalPlayer.Character
@@ -357,7 +310,6 @@ UserInputService.InputBegan:Connect(function(input, gp)
     if not gp and input.KeyCode == Config.TeleportKey then TeleportToCursor() end
 end)
 
--- Walkspeed
 local wsConn
 function UpdateWalkspeed()
     if Config.WalkspeedEnabled then
@@ -372,7 +324,6 @@ function UpdateWalkspeed()
     end
 end
 
--- Jump Power
 local jpConn
 function UpdateJumpPower()
     if Config.JumpPowerEnabled then
@@ -386,11 +337,7 @@ function UpdateJumpPower()
         local c = LocalPlayer.Character; if c and c:FindFirstChild("Humanoid") then c.Humanoid.JumpPower = 50 end
     end
 end
--- ============================================================
--- [13] VISUAL FEATURES
--- ============================================================
 
--- X-Ray
 local xrayConn
 function SetupXRay()
     if Config.XRayEnabled then
@@ -405,7 +352,6 @@ function SetupXRay()
     end
 end
 
--- ESP Drawing Functions
 function CreateBox(p)
     local b = Drawing.new("Square"); b.Visible = false; b.Color = Config.ESPColor; b.Thickness = 2; b.Filled = false; return b
 end
@@ -422,7 +368,6 @@ function CreateChams(p)
     local h = Instance.new("Highlight"); h.Name = "ESPChams"; h.FillColor = Config.ESPColor; h.FillTransparency = 0.5; h.OutlineColor = Color3.new(1,1,1); h.OutlineTransparency = 0; h.Parent = p.Character; return h
 end
 
--- ESP Update
 function UpdateESP()
     for _, v in pairs(ESPBoxes) do v.Visible = false end
     for _, v in pairs(ESPNames) do v.Visible = false end
@@ -475,11 +420,6 @@ function UpdateESP()
         end
     end
 end
--- ============================================================
--- [14] AUTO FEATURES
--- ============================================================
-
--- Auto Parry
 function AutoParry()
     if not Config.AutoParryEnabled then return end
     local c = LocalPlayer.Character; local tool = c and c:FindFirstChildWhichIsA("Tool")
@@ -490,7 +430,6 @@ function AutoParry()
     end
 end
 
--- Auto Block
 function AutoBlock()
     if not Config.AutoBlockEnabled then return end
     local c = LocalPlayer.Character
@@ -505,7 +444,6 @@ function AutoBlock()
     end
 end
 
--- Auto Heal
 function AutoHeal()
     if not Config.AutoHealEnabled then return end
     local c = LocalPlayer.Character
@@ -521,7 +459,6 @@ function AutoHeal()
     end
 end
 
--- God Mode
 function GodMode()
     if not Config.GodModeEnabled then return end
     local c = LocalPlayer.Character
@@ -530,7 +467,6 @@ function GodMode()
     end
 end
 
--- Auto Farm
 function AutoFarm()
     if not Config.AutoFarmEnabled then return end
     for _, v in pairs(workspace:GetDescendants()) do
@@ -546,7 +482,6 @@ function AutoFarm()
     end
 end
 
--- Auto Collect
 function AutoCollect()
     if not Config.AutoCollectEnabled then return end
     for _, v in pairs(workspace:GetDescendants()) do
@@ -562,7 +497,6 @@ function AutoCollect()
     end
 end
 
--- Anti Cheat Bypass
 function SetupAntiCheatBypass()
     if Config.AntiCheatBypassEnabled then
         local keywords = {"anticheat","antiexploit","ac","security","guard","check","bancheck","detection","detect","ban","kick"}
@@ -578,9 +512,7 @@ function SetupAntiCheatBypass()
         end
     end
 end
--- ============================================================
--- [15] MAIN RENDER LOOP
--- ============================================================
+
 RunService.RenderStepped:Connect(function()
     if Config.Aimlock then
         local Target = GetClosestPlayer()
@@ -597,8 +529,8 @@ RunService.RenderStepped:Connect(function()
     TriggerBot(); AimAssist(); NoRecoil(); Spinbot(); AntiAim(); GodMode(); HandleJump(); NoFallDamage(); AutoParry(); AutoBlock(); AutoHeal()
 end)
 
--- ESP Render Loop
 RunService.RenderStepped:Connect(UpdateESP)
+
 -- ============================================================
 -- [16] GUI - AIMLOCK TAB
 -- ============================================================
@@ -613,4 +545,100 @@ AimSection:Colorpicker({Title = "FOV Color", Value = Color3.fromRGB(255,255,255)
 
 local AssistSection = AimTab:Section({Title = "Aim Assist", Side = "Right"})
 AssistSection:Toggle({Title = "Aim Assist", Value = false, Callback = function(v) Config.AimAssistEnabled = v end})
-Ass
+AssistSection:Slider({Title = "Assist Strength", Value = 3, Min = 1, Max = 10, Callback = function(v) Config.AimAssistStrength = v / 10 end})
+AssistSection:Toggle({Title = "Silent Aim", Value = false, Callback = function(v) Config.SilentAimEnabled = v; SetupSilentAim() end})
+AssistSection:Toggle({Title = "Prediction", Value = false, Callback = function(v) Config.PredictionEnabled = v end})
+AssistSection:Slider({Title = "Prediction Amount", Value = 0.165, Min = 0, Max = 0.5, Precise = true, Callback = function(v) Config.PredictionAmount = v end})
+AssistSection:Toggle({Title = "Triggerbot", Value = false, Callback = function(v) Config.TriggerBotEnabled = v end})
+AssistSection:Slider({Title = "Triggerbot Delay", Value = 0.1, Min = 0, Max = 0.5, Precise = true, Callback = function(v) Config.TriggerBotDelay = v end})
+AssistSection:Toggle({Title = "No Recoil", Value = false, Callback = function(v) Config.NoRecoilEnabled = v end})
+AssistSection:Toggle({Title = "Spinbot", Value = false, Callback = function(v) Config.SpinbotEnabled = v end})
+AssistSection:Slider({Title = "Spinbot Speed", Value = 50, Min = 1, Max = 360, Callback = function(v) Config.SpinbotSpeed = v end})
+AssistSection:Toggle({Title = "Anti Aim (Jitter)", Value = false, Callback = function(v) Config.AntiAimEnabled = v end})
+AssistSection:Slider({Title = "Anti Aim Pitch", Value = 90, Min = 0, Max = 180, Callback = function(v) Config.AntiAimPitch = v end})
+
+-- ============================================================
+-- [17] GUI - ESP TAB
+-- ============================================================
+local ESPSection = ESPTab:Section({Title = "ESP Settings", Side = "Left"})
+ESPSection:Toggle({Title = "ESP Enabled", Value = false, Callback = function(v) Config.ESPEnabled = v end})
+ESPSection:Toggle({Title = "Box ESP", Value = false, Callback = function(v) Config.BoxESPEnabled = v end})
+ESPSection:Toggle({Title = "Name ESP", Value = false, Callback = function(v) Config.NameESPEnabled = v end})
+ESPSection:Toggle({Title = "Health ESP", Value = false, Callback = function(v) Config.HealthESPEnabled = v end})
+ESPSection:Toggle({Title = "Distance ESP", Value = false, Callback = function(v) Config.DistanceESPEnabled = v end})
+ESPSection:Toggle({Title = "Tracers", Value = false, Callback = function(v) Config.TracersEnabled = v end})
+ESPSection:Toggle({Title = "Chams", Value = false, Callback = function(v) Config.ChamsEnabled = v end})
+ESPSection:Colorpicker({Title = "ESP Color", Value = Color3.fromRGB(255,0,0), Callback = function(v) Config.ESPColor = v end})
+
+local CheckSection = ESPTab:Section({Title = "Checks", Side = "Right"})
+CheckSection:Toggle({Title = "Team Check", Value = true, Callback = function(v) Config.TeamCheckEnabled = v end})
+CheckSection:Toggle({Title = "Wall Check", Value = true, Callback = function(v) Config.WallCheckEnabled = v end})
+CheckSection:Toggle({Title = "Friend Only Mode", Value = false, Callback = function(v) Config.FriendOnlyMode = v end})
+CheckSection:Toggle({Title = "Whitelist Mode", Value = false, Callback = function(v) Config.WhitelistMode = v end})
+CheckSection:Dropdown({Title = "Whitelist Player", Value = "Select", Options = {"Select"}, Callback = function(v)
+    if v ~= "Select" and not Config.WhitelistedPlayers[v] then
+        Config.WhitelistedPlayers[v] = true
+    end
+end})
+
+-- ============================================================
+-- [18] GUI - SKYS TAB
+-- ============================================================
+local SkySection = SkyTab:Section({Title = "Skybox Settings", Side = "Left"})
+SkySection:Dropdown({Title = "Select Sky", Value = "Sunset", Options = SkyboxNames, Callback = function(v)
+    CurrentSkyIndex = 0
+    for i, name in pairs(SkyboxNames) do if name == v then CurrentSkyIndex = i; break end end
+    if Config.SkysEnabled and defaultSky then
+        local id = SkyboxIds[v]
+        for _, face in pairs({"Bk","Dn","Ft","Lf","Rt","Up"}) do defaultSky["Skybox"..face] = id end
+    end
+end})
+SkySection:Toggle({Title = "Skys Enabled", Value = false, Callback = function(v)
+    Config.SkysEnabled = v
+    if defaultSky then defaultSky.Enabled = v end
+end})
+
+-- ============================================================
+-- [19] GUI - VISUALS TAB
+-- ============================================================
+local VisualSection = VisualTab:Section({Title = "Visual Features", Side = "Left"})
+VisualSection:Toggle({Title = "X-Ray", Value = false, Callback = function(v) Config.XRayEnabled = v; SetupXRay() end})
+VisualSection:Toggle({Title = "Fly", Value = false, Callback = function(v) Config.FlyEnabled = v; SetupFly() end})
+VisualSection:Slider({Title = "Fly Speed", Value = 50, Min = 10, Max = 200, Callback = function(v) Config.FlySpeed = v end})
+VisualSection:Toggle({Title = "Air Jump", Value = false, Callback = function(v) Config.AirJumpEnabled = v end})
+VisualSection:Toggle({Title = "No Fall Damage", Value = false, Callback = function(v) Config.NoFallDamageEnabled = v end})
+VisualSection:Toggle({Title = "Third Person", Value = false, Callback = function(v) Config.ThirdPersonEnabled = v; SetupThirdPerson() end})
+VisualSection:Toggle({Title = "Teleport to Cursor (F)", Value = false, Callback = function(v) Config.TeleportToCursorEnabled = v end})
+
+-- ============================================================
+-- [20] GUI - MISC TAB
+-- ============================================================
+local MiscSection = MiscTab:Section({Title = "Misc Features", Side = "Left"})
+MiscSection:Toggle({Title = "Anti Cheat Bypass", Value = false, Callback = function(v) Config.AntiCheatBypassEnabled = v; SetupAntiCheatBypass() end})
+MiscSection:Toggle({Title = "Noclip", Value = false, Callback = function(v) Config.NoclipEnabled = v; SetupNoclip() end})
+MiscSection:Toggle({Title = "Infinite Jump", Value = false, Callback = function(v) Config.InfiniteJumpEnabled = v end})
+MiscSection:Toggle({Title = "God Mode", Value = false, Callback = function(v) Config.GodModeEnabled = v end})
+MiscSection:Toggle({Title = "Auto Parry", Value = false, Callback = function(v) Config.AutoParryEnabled = v end})
+MiscSection:Toggle({Title = "Auto Block", Value = false, Callback = function(v) Config.AutoBlockEnabled = v end})
+MiscSection:Toggle({Title = "Auto Heal", Value = false, Callback = function(v) Config.AutoHealEnabled = v end})
+MiscSection:Slider({Title = "Auto Heal Threshold", Value = 30, Min = 10, Max = 100, Callback = function(v) Config.AutoHealThreshold = v end})
+
+-- ============================================================
+-- [21] GUI - PLAYER TAB
+-- ============================================================
+local PlayerSection = PlayerTab:Section({Title = "Player Settings", Side = "Left"})
+PlayerSection:Toggle({Title = "Walkspeed", Value = false, Callback = function(v) Config.WalkspeedEnabled = v; UpdateWalkspeed() end})
+PlayerSection:Slider({Title = "Walkspeed Value", Value = 16, Min = 16, Max = 500, Callback = function(v) Config.WalkspeedValue = v end})
+PlayerSection:Toggle({Title = "Jump Power", Value = false, Callback = function(v) Config.JumpPowerEnabled = v; UpdateJumpPower() end})
+PlayerSection:Slider({Title = "Jump Power Value", Value = 50, Min = 50, Max = 500, Callback = function(v) Config.JumpPowerValue = v end})
+
+-- ============================================================
+-- [22] GUI - FARM TAB
+-- ============================================================
+local FarmSection = FarmTab:Section({Title = "Farm Settings", Side = "Left"})
+FarmSection:Toggle({Title = "Auto Farm", Value = false, Callback = function(v) Config.AutoFarmEnabled = v end})
+FarmSection:Toggle({Title = "Auto Collect", Value = false, Callback = function(v) Config.AutoCollectEnabled = v end})
+FarmSection:Button({Title = "Farm Now", Callback = function() AutoFarm() end})
+FarmSection:Button({Title = "Collect Now", Callback = function() AutoCollect() end})
+
+print("✅ Azic Hub V2 geladen! Viel Spaß by BROS GANG")
