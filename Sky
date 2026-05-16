@@ -1,0 +1,102 @@
+-- FIX: Warten bis das Spiel bereit ist
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
+
+print("Versuche WindUI zu laden...")
+
+-- WINDUI DOWNLOAD & LOAD
+local function LoadUI()
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+    end)
+    
+    if success and result then
+        return result
+    else
+        warn("FEHLER: WindUI konnte nicht geladen werden!")
+        warn("Grund: " .. tostring(result))
+        warn("HINWEIS: Aktiviere 'Allow HTTP Requests' in den Game Settings!")
+        return nil
+    end
+end
+
+local WindUI = LoadUI()
+if not WindUI then return end -- Stoppt, wenn UI nicht geladen werden kann
+
+-- --- SETUP LIGHTING ---
+local function GetInst(class, name)
+    local obj = Lighting:FindFirstChild(name) or Instance.new(class)
+    obj.Name = name
+    obj.Parent = Lighting
+    return obj
+end
+
+local Sky = GetInst("Sky", "GlobalSky")
+local Atm = GetInst("Atmosphere", "GlobalAtm")
+local Bloom = GetInst("Bloom", "GlobalBloom")
+local CC = GetInst("ColorCorrectionEffect", "GlobalCC")
+
+local function updateSky(id)
+    local url = "rbxassetid://" .. tostring(id)
+    Sky.SkyboxBk = url; Sky.SkyboxDn = url; Sky.SkyboxFt = url;
+    Sky.SkyboxLf = url; Sky.SkyboxRt = url; Sky.SkyboxUp = url;
+end
+
+-- --- PRESETS ---
+local Presets = {
+    ["Galaxy"] = {ID = 159454299, Time = 0, Dens = 0.3, Tint = Color3.fromRGB(180, 160, 255)},
+    ["Sunset"] = {ID = 600886096, Time = 17.6, Dens = 0.4, Tint = Color3.fromRGB(255, 200, 150)},
+    ["Red Sky"] = {ID = 237305141, Time = 18, Dens = 0.5, Tint = Color3.fromRGB(255, 100, 100)},
+    ["Night"] = {ID = 152345214, Time = 0, Dens = 0.1, Tint = Color3.fromRGB(150, 150, 255)},
+    ["Matcha"] = {ID = 280208166, Time = 12, Dens = 0.2, Tint = Color3.fromRGB(200, 255, 200)},
+    ["Purple Void"] = {ID = 6363715694, Time = 2, Dens = 0.6, Tint = Color3.fromRGB(255, 150, 255)},
+    ["Cloud Heaven"] = {ID = 151165158, Time = 12, Dens = 0.1, Tint = Color3.fromRGB(255, 255, 255)},
+    ["Anime Sky"] = {ID = 5110826978, Time = 10, Dens = 0.2, Tint = Color3.fromRGB(255, 240, 230)}
+}
+
+local function Apply(name)
+    local p = Presets[name]
+    if not p then return end
+    updateSky(p.ID)
+    local t = TweenInfo.new(2)
+    TweenService:Create(Lighting, t, {ClockTime = p.Time}):Play()
+    TweenService:Create(Atm, t, {Density = p.Dens}):Play()
+    TweenService:Create(CC, t, {TintColor = p.Tint}):Play()
+    
+    WindUI:Notify({Title = "Sky System", Content = name .. " angewendet", Duration = 3})
+end
+
+-- --- UI ---
+local Window = WindUI:CreateWindow({
+    Title = "PREMIUM SKY SYSTEM",
+    Icon = "cloud",
+    Theme = "Dark",
+    Size = UDim2.fromOffset(450, 500)
+})
+
+local Tab = Window:Tab({ Title = "Sky Library", Icon = "image" })
+
+Tab:Section({ Title = "Select Atmosphere" })
+
+local list = {"Galaxy", "Sunset", "Red Sky", "Night", "Matcha", "Purple Void", "Cloud Heaven", "Anime Sky"}
+for _, name in ipairs(list) do
+    Tab:Button({
+        Title = name,
+        Desc = "Klicken zum Wechseln",
+        Callback = function() Apply(name) end
+    })
+end
+
+Tab:Section({ Title = "Controls" })
+Tab:Button({
+    Title = "Reset to Default",
+    Callback = function() 
+        Sky.SkyboxBk = ""
+        Lighting.ClockTime = 14
+    end
+})
+
+print("Sky System UI erfolgreich geladen!")
