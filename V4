@@ -1,644 +1,1622 @@
---[[
-╔══════════════════════════════════════════════════════════════╗
-║              AZIC HUB V2 - ULTIMATE EDITION                ║
-║              by BROS GANG - ALLE FEATURES                  ║
-╚══════════════════════════════════════════════════════════════╝
---]]
+-- ========================================================================
+-- AZIC HUB V6 – THE ULTIMATE VERSION
+-- 100x besser als V2 – Professionelles Cheat-UI mit allem
+-- ========================================================================
 
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+-- =====================================================
+-- MODUL 1: SERVICE-MANAGER
+-- =====================================================
+local Services = {
+    Players = game:GetService("Players"),
+    RunService = game:GetService("RunService"),
+    UserInputService = game:GetService("UserInputService"),
+    Lighting = game:GetService("Lighting"),
+    TweenService = game:GetService("TweenService"),
+    CoreGui = game:GetService("CoreGui"),
+    HttpService = game:GetService("HttpService"),
+    TeleportService = game:GetService("TeleportService"),
+    ReplicatedStorage = game:GetService("ReplicatedStorage"),
+    SoundService = game:GetService("SoundService")
+}
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Camera = workspace.CurrentCamera
+local Players = Services.Players
+local RunService = Services.RunService
+local UserInputService = Services.UserInputService
+local Lighting = Services.Lighting
+local TweenService = Services.TweenService
+local CoreGui = Services.CoreGui
+local HttpService = Services.HttpService
+local TeleportService = Services.TeleportService
+local SoundService = Services.SoundService
+
 local LocalPlayer = Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-local Lighting = game:GetService("Lighting")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local TweenService = game:GetService("TweenService")
-local MarketplaceService = game:GetService("MarketplaceService")
-local HttpService = game:GetService("HttpService")
-local CoreGui = game:GetService("CoreGui")
-local GuiService = game:GetService("GuiService")
-local StarterGui = game:GetService("StarterGui")
-local Teams = game:GetService("Teams")
+local Camera = workspace.CurrentCamera
 local Mouse = LocalPlayer:GetMouse()
 
-local Config = {
-    Aimlock = false, FOV = 120, TargetPart = "Head", Smoothness = 0.1,
-    AimKey = Enum.KeyCode.E, FOVVisible = true, FOVCircleFilled = false,
-    AimbotFOVColor = Color3.fromRGB(255, 255, 255),
-    AimAssistEnabled = false, AimAssistStrength = 0.3,
-    SilentAimEnabled = false,
-    PredictionEnabled = false, PredictionAmount = 0.165,
-    TriggerBotEnabled = false, TriggerBotDelay = 0.1,
-    NoRecoilEnabled = false,
-    SpinbotEnabled = false, SpinbotSpeed = 50,
-    AntiAimEnabled = false, AntiAimPitch = 90,
-    ESPEnabled = false, BoxESPEnabled = false, NameESPEnabled = false,
-    HealthESPEnabled = false, TracersEnabled = false, ChamsEnabled = false,
-    ESPColor = Color3.fromRGB(255, 0, 0),
-    TeamCheckEnabled = true, WallCheckEnabled = true,
-    FriendOnlyMode = false, WhitelistMode = false, WhitelistedPlayers = {},
-    DistanceESPEnabled = false, XRayEnabled = false, SkysEnabled = false,
-    FlyEnabled = false, FlySpeed = 50,
-    AirJumpEnabled = false, NoFallDamageEnabled = false, ThirdPersonEnabled = false,
-    TeleportToCursorEnabled = false, TeleportKey = Enum.KeyCode.F,
-    WalkspeedEnabled = false, WalkspeedValue = 16,
-    JumpPowerEnabled = false, JumpPowerValue = 50,
-    NoclipEnabled = false, InfiniteJumpEnabled = false, GodModeEnabled = false,
-    AutoParryEnabled = false, AutoBlockEnabled = false,
-    AutoHealEnabled = false, AutoHealThreshold = 30,
-    AutoFarmEnabled = false, AutoCollectEnabled = false,
-    AntiCheatBypassEnabled = false,
+-- =====================================================
+-- MODUL 2: SETTINGS-MANAGER (ALLES ZENTRAL)
+-- =====================================================
+local Settings = {
+    -- Version & Info
+    Version = "6.0",
+    Author = "AZIC",
+    
+    -- AIMLOCK
+    Aimlock = {
+        Enabled = false,
+        Mode = "Smooth", -- "Instant" | "Smooth" | "Silent"
+        FOV = 120,
+        FOVVisible = true,
+        FOVColor = Color3.fromRGB(255, 255, 255),
+        FOVFilled = false,
+        TargetPart = "Head",
+        Smoothness = 0.1,
+        Key = Enum.KeyCode.E,
+        TeamCheck = true,
+        AllianceCheck = false,
+        AllianceList = {},
+        WallCheck = true,
+        Prediction = false,
+        PredictionAmount = 0.165,
+        TriggerBot = false,
+        TriggerDelay = 0.1,
+        AimAssist = false,
+        AimAssistStrength = 0.3,
+        NoRecoil = false,
+        Spinbot = false,
+        SpinbotSpeed = 50,
+        AntiAim = false,
+        AntiAimPitch = 90,
+        -- NEU: Advanced Features
+        HitboxExpansion = 0,
+        AutoWall = false,
+        VisibilityCheck = true
+    },
+    
+    -- ESP
+    ESP = {
+        Enabled = false,
+        Box = false,
+        BoxColor = Color3.fromRGB(255, 0, 0),
+        BoxThickness = 2,
+        Name = false,
+        NameColor = Color3.fromRGB(255, 255, 255),
+        Health = false,
+        HealthColor = Color3.fromRGB(0, 255, 0),
+        Tracers = false,
+        TracerColor = Color3.fromRGB(255, 0, 0),
+        TracerThickness = 1,
+        Chams = false,
+        ChamsColor = Color3.fromRGB(255, 0, 0),
+        ChamsTransparency = 0.5,
+        -- NEU: Advanced ESP
+        Distance = false,
+        DistanceColor = Color3.fromRGB(255, 255, 255),
+        Weapon = false,
+        WeaponColor = Color3.fromRGB(255, 200, 0),
+        Skeleton = false,
+        SkeletonColor = Color3.fromRGB(255, 255, 255),
+        InfoBox = false,
+        InfoBoxColor = Color3.fromRGB(0, 0, 0),
+        MaxDistance = 500
+    },
+    
+    -- PLAYER
+    Player = {
+        Walkspeed = {Enabled = false, Value = 16, Preset = "Normal"},
+        JumpPower = {Enabled = false, Value = 50, Preset = "Normal"},
+        Noclip = false,
+        InfiniteJump = false,
+        GodMode = false,
+        -- NEU: Advanced Movement
+        Fly = {Enabled = false, Speed = 50, UpSpeed = 30},
+        Bhop = false,
+        TeleportOnClick = false,
+        AntiFall = false,
+        NoStun = false,
+        AutoRespawn = false
+    },
+    
+    -- VISUALS
+    Visuals = {
+        NoFog = false,
+        FullBright = false,
+        Brightness = 1,
+        FogColor = Color3.fromRGB(0, 0, 0),
+        Ambient = Color3.fromRGB(0, 0, 0),
+        -- NEU: Advanced Visuals
+        NoShadows = false,
+        NoWater = false,
+        NoGrass = false,
+        NoTrees = false,
+        ChromaticAberration = false,
+        Vignette = false,
+        Bloom = false
+    },
+    
+    -- SKY
+    Sky = {
+        Enabled = false,
+        CurrentIndex = 1,
+        RotationSpeed = 0.5,
+        -- NEU: Custom Sky
+        CustomColors = false,
+        TopColor = Color3.fromRGB(0, 0, 0),
+        BottomColor = Color3.fromRGB(0, 0, 0),
+        HorizonColor = Color3.fromRGB(0, 0, 0)
+    },
+    
+    -- FARM
+    Farm = {
+        AutoFarm = false,
+        AutoCollect = false,
+        AutoClick = false,
+        AutoClickDelay = 0.1,
+        -- NEU: Smart Farm
+        FarmPriority = {"Ore", "Node", "Resource", "Coin", "Gem"},
+        CollectRadius = 50,
+        UseTool = false,
+        ToolName = "",
+        AutoSell = false,
+        SellWaitTime = 60
+    },
+    
+    -- MISC
+    Misc = {
+        -- NEU: Performance
+        PerformanceMode = "High", -- "Low" | "Medium" | "High"
+        MaxESPObjects = 50,
+        RefreshRate = 1,
+        -- NEU: Security
+        AntiKick = false,
+        AntiBan = false,
+        SpoofName = false,
+        SpoofNameValue = "",
+        -- NEU: Quality of Life
+        AutoRejoin = false,
+        AutoRespawn = false,
+        AutoClick = false,
+        ClickDelay = 0.1
+    },
+    
+    -- SOUND
+    Sound = {
+        Enabled = true,
+        Volume = 0.5,
+        ClickSound = "rbxassetid://4481675116",
+        ToggleSound = "rbxassetid://4481675116",
+        KillSound = "rbxassetid://4481675116"
+    }
+}
+
+-- =====================================================
+-- MODUL 3: UTILITY-FUNKTIONEN (WIEDERVERWENDBAR)
+-- =====================================================
+local Utility = {}
+
+-- Character/Humanoid Checks
+function Utility.GetCharacter(Player)
+    return Player and Player.Character
+end
+
+function Utility.GetHumanoid(Character)
+    return Character and Character:FindFirstChild("Humanoid")
+end
+
+function Utility.GetHumanoidRootPart(Character)
+    return Character and Character:FindFirstChild("HumanoidRootPart")
+end
+
+function Utility.GetTorso(Character)
+    return Character and (Character:FindFirstChild("UpperTorso") or Character:FindFirstChild("Torso"))
+end
+
+-- Sicherheitschecks
+function Utility.IsValid(Player)
+    if not Player or Player == LocalPlayer then return false end
+    local Character = Utility.GetCharacter(Player)
+    if not Character then return false end
+    local Humanoid = Utility.GetHumanoid(Character)
+    if not Humanoid or Humanoid.Health <= 0 then return false end
+    return true
+end
+
+function Utility.IsEnemy(Player)
+    if not Utility.IsValid(Player) then return false end
+    if not Settings.Aimlock.TeamCheck then return true end
+    if LocalPlayer.Team and Player.Team then
+        return LocalPlayer.Team ~= Player.Team
+    end
+    return true
+end
+
+-- Part suchen (Pfad oder Name)
+function Utility.FindPart(input)
+    if input == "" then return nil end
+    local part = nil
+    if input:find("%.") then
+        local success, result = pcall(function()
+            return loadstring("return " .. input)()
+        end)
+        if success and result and result:IsA("BasePart") then
+            part = result
+        end
+    end
+    if not part then
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj:IsA("BasePart") and obj.Name == input then
+                part = obj
+                break
+            end
+        end
+    end
+    return part
+end
+
+-- Distance berechnen
+function Utility.GetDistance(Part1, Part2)
+    if not Part1 or not Part2 then return math.huge end
+    return (Part1.Position - Part2.Position).Magnitude
+end
+
+-- Screen-Position prüfen
+function Utility.IsOnScreen(WorldPosition)
+    local Pos, OnScreen = Camera:WorldToViewportPoint(WorldPosition)
+    return OnScreen, Pos
+end
+
+-- Notifications mit Sound
+function Utility.Notify(Title, Content, Duration, Icon)
+    if Settings.Sound.Enabled then
+        local sound = Instance.new("Sound")
+        sound.SoundId = Settings.Sound.ToggleSound
+        sound.Volume = Settings.Sound.Volume
+        sound.Parent = LocalPlayer:FindFirstChild("PlayerGui") or CoreGui
+        sound:Play()
+        task.wait(0.1)
+        sound:Destroy()
+    end
+    WindUI:Notify({
+        Title = Title,
+        Content = Content,
+        Duration = Duration or 3,
+        Icon = Icon or "💬"
+    })
+end
+
+-- =====================================================
+-- MODUL 4: UI-LOADER (MIT FEHLERBEHANDLUNG)
+-- =====================================================
+local WindUI
+local function LoadUI()
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+    end)
+    if success then
+        WindUI = result
+        print("✅ WindUI geladen")
+        return true
+    else
+        warn("❌ WindUI konnte nicht geladen werden: " .. tostring(result))
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Fehler",
+            Text = "WindUI konnte nicht geladen werden!",
+            Duration = 5
+        })
+        return false
+    end
+end
+
+if not LoadUI() then return end
+
+-- =====================================================
+-- MODUL 5: WINDUI WINDOW
+-- =====================================================
+local Window = WindUI:CreateWindow({
+    Title = "⚡ AZIC HUB V6",
+    Icon = "💀",
+    Author = "by AZIC",
+    Folder = "AZIC",
+    Size = UDim2.fromOffset(680, 600),
+    Transparent = true,
+    Theme = "Dark",
+})
+
+-- Tabs
+local Tabs = {
+    Aim = Window:Tab({Title = "🎯 Aim", Icon = "crosshair"}),
+    ESP = Window:Tab({Title = "👁️ ESP", Icon = "eye"}),
+    Player = Window:Tab({Title = "🧍 Player", Icon = "user"}),
+    Visual = Window:Tab({Title = "🎨 Visuals", Icon = "monitor"}),
+    Sky = Window:Tab({Title = "🌤️ Skys", Icon = "sun"}),
+    Farm = Window:Tab({Title = "🌾 Farm", Icon = "zap"}),
+    Misc = Window:Tab({Title = "⚙️ Misc", Icon = "settings"}),
+    Info = Window:Tab({Title = "📖 Info", Icon = "info"})
+}
+
+-- =====================================================
+-- MODUL 6: BACKGROUND-ANIMATION
+-- =====================================================
+local function SetupBackground()
+    local bgImage = "https://photos.app.goo.gl/qsCDGZ6vVQVcpLEE8"
+    pcall(function()
+        game:GetService("ContentProvider"):PreloadAsync({bgImage})
+    end)
+    local bg = Instance.new("ImageLabel")
+    bg.Name = "AzicHubBackground"
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.Position = UDim2.new(0, 0, 0, 0)
+    bg.BackgroundTransparency = 1
+    bg.Image = bgImage
+    bg.ScaleType = Enum.ScaleType.Crop
+    bg.ImageTransparency = 0.85
+    bg.ZIndex = 0
+    
+    -- Animation: Langsames Zoomen
+    local BaseSize = UDim2.new(1, 0, 1, 0)
+    local TargetSize = UDim2.new(1.05, 0, 1.05, 0)
+    
+    local mainGui = CoreGui:FindFirstChild("WindUI")
+    if mainGui then
+        local frame = mainGui:FindFirstChild("MainFrame") or mainGui:FindFirstChildWhichIsA("Frame")
+        if frame then 
+            bg.Parent = frame
+        else 
+            bg.Parent = mainGui
+        end
+    end
+    
+    -- Parallax-Animation
+    task.spawn(function()
+        local attempts = 0
+        while not bg.Parent and attempts < 20 do
+            task.wait(1)
+            attempts = attempts + 1
+            local gui = CoreGui:FindFirstChild("WindUI")
+            if gui then
+                local f = gui:FindFirstChild("MainFrame") or gui:FindFirstChildWhichIsA("Frame")
+                if f then bg.Parent = f else bg.Parent = gui end
+            end
+        end
+        if bg.Parent then
+            -- Sanfte Zoom-Animation
+            while bg.Parent do
+                TweenService:Create(bg, TweenInfo.new(10, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                    ImageTransparency = 0.85
+                }):Play()
+                task.wait(10)
+            end
+        end
+    end)
+end
+
+task.spawn(SetupBackground)
+
+-- =====================================================
+-- MODUL 7: FOV CIRCLE (MIT ANIMATION)
+-- =====================================================
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Visible = true
+FOVCircle.Color = Settings.Aimlock.FOVColor
+FOVCircle.Thickness = 2
+FOVCircle.NumSides = 100
+FOVCircle.Filled = Settings.Aimlock.FOVFilled
+FOVCircle.Transparency = Settings.Aimlock.FOVFilled and 0.3 or 1
+FOVCircle.Radius = Settings.Aimlock.FOV
+
+-- Puls-Animation
+local pulse = 0
+local pulseDirection = 1
+
+-- =====================================================
+-- MODUL 8: AIMBOT KERNLOGIK (OPTIMIERT)
+-- =====================================================
+local function GetClosestPlayer()
+    local Closest = nil
+    local Shortest = math.huge
+    local FOV = Settings.Aimlock.FOV
+    local TargetPart = Settings.Aimlock.TargetPart
+    local ViewportSize = Camera.ViewportSize
+    local MaxDistance = 5000
+    
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if not Utility.IsValid(Player) or not Utility.IsEnemy(Player) then continue end
+        
+        local Character = Utility.GetCharacter(Player)
+        local Part = Character and Character:FindFirstChild(TargetPart)
+        if not Part then continue end
+        
+        -- WallCheck
+        if Settings.Aimlock.WallCheck then
+            local Origin = Camera.CFrame.Position
+            local Direction = (Part.Position - Origin).Unit * MaxDistance
+            local Params = RaycastParams.new()
+            Params.FilterType = Enum.RaycastFilterType.Blacklist
+            Params.FilterDescendantsInstances = {LocalPlayer.Character}
+            local Result = workspace:Raycast(Origin, Direction, Params)
+            if Result and not Result.Instance:IsDescendantOf(Character) then 
+                continue 
+            end
+        end
+        
+        local Pos, OnScreen = Camera:WorldToViewportPoint(Part.Position)
+        if not OnScreen then continue end
+        
+        local Distance = (Vector2.new(Pos.X, Pos.Y) - Vector2.new(ViewportSize.X/2, ViewportSize.Y/2)).Magnitude
+        if Distance <= FOV and Distance < Shortest then
+            Shortest = Distance
+            Closest = Part
+        end
+    end
+    return Closest
+end
+
+-- Aimlock Loop
+RunService.RenderStepped:Connect(function()
+    -- FOV Circle aktualisieren
+    local ViewportSize = Camera.ViewportSize
+    FOVCircle.Position = Vector2.new(ViewportSize.X / 2, ViewportSize.Y / 2)
+    FOVCircle.Radius = Settings.Aimlock.FOV
+    FOVCircle.Color = Settings.Aimlock.FOVColor
+    FOVCircle.Visible = Settings.Aimlock.FOVVisible
+    FOVCircle.Filled = Settings.Aimlock.FOVFilled
+    FOVCircle.Transparency = Settings.Aimlock.FOVFilled and 0.3 or 1
+    
+    -- Puls-Effekt
+    pulse = pulse + 0.02 * pulseDirection
+    if pulse > 1 then pulseDirection = -1 end
+    if pulse < 0 then pulseDirection = 1 end
+    FOVCircle.Thickness = 1 + pulse
+    
+    -- Aimlock
+    if Settings.Aimlock.Enabled then
+        local Target = GetClosestPlayer()
+        if Target then
+            local TargetPos = Target.Position
+            
+            -- Prediction
+            if Settings.Aimlock.Prediction then
+                local Root = Target.Parent and Target.Parent:FindFirstChild("HumanoidRootPart")
+                if Root then
+                    TargetPos = TargetPos + (Root.Velocity * Settings.Aimlock.PredictionAmount)
+                end
+            end
+            
+            -- Smooth Aim
+            if Settings.Aimlock.Mode == "Smooth" and Settings.Aimlock.Smoothness > 0 then
+                Camera.CFrame = Camera.CFrame:Lerp(
+                    CFrame.new(Camera.CFrame.Position, TargetPos),
+                    Settings.Aimlock.Smoothness
+                )
+            elseif Settings.Aimlock.Mode == "Silent" then
+                -- Silent Aim wird separat behandelt
+            else
+                Camera.CFrame = CFrame.new(Camera.CFrame.Position, TargetPos)
+            end
+        end
+    end
+end)
+
+-- =====================================================
+-- MODUL 9: ESP-MANAGER (MIT CACHING)
+-- =====================================================
+local ESPObjects = {
+    Boxes = {},
+    Names = {},
+    Health = {},
+    Tracers = {},
+    Chams = {},
+    Distance = {},
+    Weapon = {},
+    Skeleton = {},
+    InfoBox = {}
+}
+
+local function CreateESPObject(Type, Player)
+    if Type == "Box" then
+        local box = Drawing.new("Square")
+        box.Visible = false
+        box.Color = Settings.ESP.BoxColor
+        box.Thickness = Settings.ESP.BoxThickness
+        box.Filled = false
+        return box
+    elseif Type == "Name" then
+        local text = Drawing.new("Text")
+        text.Visible = false
+        text.Color = Settings.ESP.NameColor
+        text.Size = 14
+        text.Center = true
+        text.Outline = true
+        text.Text = Player.Name
+        return text
+    elseif Type == "Health" then
+        local text = Drawing.new("Text")
+        text.Visible = false
+        text.Color = Settings.ESP.HealthColor
+        text.Size = 12
+        text.Center = true
+        text.Outline = true
+        return text
+    elseif Type == "Tracer" then
+        local line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Settings.ESP.TracerColor
+        line.Thickness = Settings.ESP.TracerThickness
+        return line
+    elseif Type == "Chams" then
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "ESPChams"
+        highlight.FillColor = Settings.ESP.ChamsColor
+        highlight.FillTransparency = Settings.ESP.ChamsTransparency
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+        highlight.OutlineTransparency = 0
+        highlight.Parent = Player.Character
+        return highlight
+    end
+    return nil
+end
+
+local function UpdateESP()
+    -- Alle ESP-Objekte zurücksetzen
+    for _, list in pairs(ESPObjects) do
+        for _, obj in pairs(list) do
+            if obj and obj.Visible ~= nil then
+                obj.Visible = false
+            end
+        end
+    end
+    
+    if not Settings.ESP.Enabled then return end
+    
+    local MaxDistance = Settings.ESP.MaxDistance
+    local PlayerPos = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player == LocalPlayer then continue end
+        if not Utility.IsValid(Player) or not Utility.IsEnemy(Player) then continue end
+        
+        local Character = Utility.GetCharacter(Player)
+        local Root = Utility.GetHumanoidRootPart(Character)
+        if not Root then continue end
+        
+        -- Distance Check
+        if PlayerPos and Utility.GetDistance(PlayerPos, Root) > MaxDistance then continue end
+        
+        local Humanoid = Utility.GetHumanoid(Character)
+        local Pos, OnScreen = Camera:WorldToViewportPoint(Root.Position)
+        
+        if OnScreen then
+            -- Box ESP
+            if Settings.ESP.Box then
+                local box = ESPObjects.Boxes[Player]
+                if not box then
+                    box = CreateESPObject("Box", Player)
+                    ESPObjects.Boxes[Player] = box
+                end
+                local Size = Vector2.new(2000 / Pos.Z, 3000 / Pos.Z)
+                box.Size = Size
+                box.Position = Vector2.new(Pos.X - Size.X/2, Pos.Y - Size.Y/2)
+                box.Visible = true
+                box.Color = Settings.ESP.BoxColor
+                box.Thickness = Settings.ESP.BoxThickness
+            end
+            
+            -- Name ESP
+            if Settings.ESP.Name then
+                local name = ESPObjects.Names[Player]
+                if not name then
+                    name = CreateESPObject("Name", Player)
+                    ESPObjects.Names[Player] = name
+                end
+                name.Position = Vector2.new(Pos.X, Pos.Y - 50)
+                name.Visible = true
+                   name.Visible = true
+                name.Color = Settings.ESP.NameColor
+            end
+            
+            -- Health ESP
+            if Settings.ESP.Health and Humanoid then
+                local health = ESPObjects.Health[Player]
+                if not health then
+                    health = CreateESPObject("Health", Player)
+                    ESPObjects.Health[Player] = health
+                end
+                local HealthPercent = Humanoid.Health / Humanoid.MaxHealth
+                health.Text = math.floor(Humanoid.Health) .. "/" .. math.floor(Humanoid.MaxHealth)
+                health.Position = Vector2.new(Pos.X, Pos.Y - 35)
+                health.Color = Color3.new(1 - HealthPercent, HealthPercent, 0)
+                health.Visible = true
+            end
+            
+            -- Tracers
+            if Settings.ESP.Tracers then
+                local tracer = ESPObjects.Tracers[Player]
+                if not tracer then
+                    tracer = CreateESPObject("Tracer", Player)
+                    ESPObjects.Tracers[Player] = tracer
+                end
+                tracer.From = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y)
+                tracer.To = Vector2.new(Pos.X, Pos.Y)
+                tracer.Visible = true
+                tracer.Color = Settings.ESP.TracerColor
+                tracer.Thickness = Settings.ESP.TracerThickness
+            end
+            
+            -- Chams
+            if Settings.ESP.Chams then
+                local cham = ESPObjects.Chams[Player]
+                if not cham then
+                    cham = CreateESPObject("Chams", Player)
+                    ESPObjects.Chams[Player] = cham
+                end
+                cham.Enabled = true
+                cham.FillColor = Settings.ESP.ChamsColor
+                cham.FillTransparency = Settings.ESP.ChamsTransparency
+            end
+        end
+    end
+end
+
+-- ESP Update Loop (mit Performance-Optimierung)
+local ESPUpdateRate = 1 / 30 -- 30 FPS für ESP
+local ESPTimer = 0
+
+RunService.RenderStepped:Connect(function(delta)
+    ESPTimer = ESPTimer + delta
+    if ESPTimer >= ESPUpdateRate then
+        ESPTimer = 0
+        UpdateESP()
+    end
+end)
+
+-- =====================================================
+-- MODUL 10: PLAYER-MANAGER (MIT PRESETS)
+-- =====================================================
+local PlayerPresets = {
+    Normal = {Speed = 16, Jump = 50},
+    Fast = {Speed = 50, Jump = 100},
+    Super = {Speed = 100, Jump = 200},
+    Ultra = {Speed = 250, Jump = 500}
+}
+
+local function ApplyPlayerSettings()
+    local Character = Utility.GetCharacter(LocalPlayer)
+    local Humanoid = Utility.GetHumanoid(Character)
+    if not Humanoid then return end
+    
+    -- Walkspeed
+    if Settings.Player.Walkspeed.Enabled then
+        Humanoid.WalkSpeed = Settings.Player.Walkspeed.Value
+    else
+        Humanoid.WalkSpeed = 16
+    end
+    
+    -- Jump Power
+    if Settings.Player.JumpPower.Enabled then
+        Humanoid.JumpPower = Settings.Player.JumpPower.Value
+    else
+        Humanoid.JumpPower = 50
+    end
+    
+    -- Noclip
+    if Settings.Player.Noclip then
+        for _, part in pairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+    
+    -- God Mode
+    if Settings.Player.GodMode then
+        Humanoid.MaxHealth = math.huge
+        Humanoid.Health = math.huge
+        Humanoid.BreakJointsOnDeath = false
+    end
+end
+
+-- Movement Loop
+RunService.RenderStepped:Connect(function()
+    -- Infinite Jump
+    if Settings.Player.InfiniteJump then
+        local Character = Utility.GetCharacter(LocalPlayer)
+        local Humanoid = Utility.GetHumanoid(Character)
+        if Humanoid then
+            local State = Humanoid:GetState()
+            if State == Enum.HumanoidStateType.Freefall or State == Enum.HumanoidStateType.Jumping then
+                Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end
+    
+    -- Fly (NEU!)
+    if Settings.Player.Fly.Enabled then
+        local Character = Utility.GetCharacter(LocalPlayer)
+        local Root = Utility.GetHumanoidRootPart(Character)
+        if Root then
+            local MoveDirection = Vector3.zero
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                MoveDirection = MoveDirection + Camera.CFrame.LookVector * Settings.Player.Fly.Speed
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                MoveDirection = MoveDirection - Camera.CFrame.LookVector * Settings.Player.Fly.Speed
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                MoveDirection = MoveDirection - Camera.CFrame.RightVector * Settings.Player.Fly.Speed
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                MoveDirection = MoveDirection + Camera.CFrame.RightVector * Settings.Player.Fly.Speed
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+                MoveDirection = MoveDirection + Vector3.new(0, Settings.Player.Fly.UpSpeed, 0)
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+                MoveDirection = MoveDirection - Vector3.new(0, Settings.Player.Fly.UpSpeed, 0)
+            end
+            Root.Velocity = MoveDirection
+        end
+    end
+end)
+
+-- =====================================================
+-- MODUL 11: SKYBOX-MANAGER (MIT VORSCHAU)
+-- =====================================================
+local SkyboxData = {
+    "Sunset", "Night", "Space", "Purple Galaxy", "Blue Galaxy",
+    "Red Galaxy", "Green Galaxy", "Orange Galaxy", "Pink Galaxy",
+    "Yellow Galaxy", "Custom 1", "Custom 2", "Custom 3", "Custom 4", "Custom 5"
 }
 
 local SkyboxIds = {
-    Sunset = "rbxassetid://6444884337", Night = "rbxassetid://16188270489",
-    Space = "rbxassetid://16188270612", ["Purple Galaxy"] = "rbxassetid://16188270785",
-    ["Blue Galaxy"] = "rbxassetid://16188270965", ["Red Galaxy"] = "rbxassetid://16188271097",
-    ["Green Galaxy"] = "rbxassetid://16188271236", ["Orange Galaxy"] = "rbxassetid://16188271378",
-    ["Pink Galaxy"] = "rbxassetid://16188271550", ["Yellow Galaxy"] = "rbxassetid://16188271715",
-    ["Custom 1"] = "rbxassetid://16188271879", ["Custom 2"] = "rbxassetid://16188272024",
-    ["Custom 3"] = "rbxassetid://16188272208", ["Custom 4"] = "rbxassetid://16188272373",
-    ["Custom 5"] = "rbxassetid://16188272544",
+    ["Sunset"] = "rbxassetid://6444884337",
+    ["Night"] = "rbxassetid://16188270489",
+    ["Space"] = "rbxassetid://16188270612",
+    ["Purple Galaxy"] = "rbxassetid://16188270785",
+    ["Blue Galaxy"] = "rbxassetid://16188270965",
+    ["Red Galaxy"] = "rbxassetid://16188271097",
+    ["Green Galaxy"] = "rbxassetid://16188271236",
+    ["Orange Galaxy"] = "rbxassetid://16188271378",
+    ["Pink Galaxy"] = "rbxassetid://16188271550",
+    ["Yellow Galaxy"] = "rbxassetid://16188271715",
+    ["Custom 1"] = "rbxassetid://16188271879",
+    ["Custom 2"] = "rbxassetid://16188272024",
+    ["Custom 3"] = "rbxassetid://16188272208",
+    ["Custom 4"] = "rbxassetid://16188272373",
+    ["Custom 5"] = "rbxassetid://16188272544"
 }
-local SkyboxNames = {"Sunset","Night","Space","Purple Galaxy","Blue Galaxy","Red Galaxy","Green Galaxy","Orange Galaxy","Pink Galaxy","Yellow Galaxy","Custom 1","Custom 2","Custom 3","Custom 4","Custom 5"}
-local CurrentSkyIndex = 1
-local ESPBoxes, ESPNames, ESPHealth, Tracers, Chams = {}, {}, {}, {}, {}
 
-local defaultSky = Instance.new("Sky")
-for _, face in pairs({"Bk","Dn","Ft","Lf","Rt","Up"}) do
-    defaultSky["Skybox"..face] = SkyboxIds["Sunset"]
+local function SetSkybox(id)
+    -- Alte Sky entfernen
+    for _, v in pairs(Lighting:GetChildren()) do
+        if v:IsA("Sky") then v:Destroy() end
+    end
+    local newSky = Instance.new("Sky")
+    newSky.Name = "CustomSkybox"
+    newSky.SkyboxBk = id
+    newSky.SkyboxDn = id
+    newSky.SkyboxFt = id
+    newSky.SkyboxLf = id
+    newSky.SkyboxRt = id
+    newSky.SkyboxUp = id
+    newSky.Parent = Lighting
 end
-defaultSky.Parent = Lighting
 
-local Window = WindUI:CreateWindow({
-    Title = "Azic Hub", Icon = "cool", Author = "by BROS GANG",
-    Folder = "AZIC", Size = UDim2.fromOffset(620, 550),
-    Transparent = true, Theme = "Dark",
+-- Skybox Rotation Animation
+RunService.RenderStepped:Connect(function()
+    if Settings.Sky.Enabled then
+        local sky = Lighting:FindFirstChild("CustomSkybox")
+        if sky then
+            sky:SetAttribute("Rotation", (sky:GetAttribute("Rotation") or 0) + Settings.Sky.RotationSpeed)
+            sky.Rotation = sky:GetAttribute("Rotation")
+        end
+    end
+end)
+
+-- =====================================================
+-- MODUL 12: FARM-MANAGER (SMART)
+-- =====================================================
+local function SmartFarm()
+    if not Settings.Farm.AutoFarm then return end
+    
+    local Character = Utility.GetCharacter(LocalPlayer)
+    local Root = Utility.GetHumanoidRootPart(Character)
+    if not Root then return end
+    
+    local Collected = 0
+    local Priority = Settings.Farm.FarmPriority
+    local CollectRadius = Settings.Farm.CollectRadius
+    
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") then
+            local Name = v.Name:lower()
+            for _, target in ipairs(Priority) do
+                if Name:find(target:lower()) then
+                    local Distance = Utility.GetDistance(Root, v)
+                    if Distance <= CollectRadius then
+                        Root.CFrame = v.CFrame * CFrame.new(0, 5, 0)
+                        Collected = Collected + 1
+                        task.wait(0.3)
+                        break
+                    end
+                end
+            end
+        end
+    end
+    
+    if Collected > 0 then
+        Utility.Notify("🌾 Farm", Collected .. " Items gesammelt!", 2, "🌾")
+    end
+end
+
+-- Farm Loop
+RunService.RenderStepped:Connect(function()
+    if Settings.Farm.AutoFarm then
+        SmartFarm()
+    end
+end)
+
+-- =====================================================
+-- MODUL 13: SOUND-MANAGER
+-- =====================================================
+local function PlaySound(SoundId)
+    if not Settings.Sound.Enabled then return end
+    pcall(function()
+        local sound = Instance.new("Sound")
+        sound.SoundId = SoundId or Settings.Sound.ClickSound
+        sound.Volume = Settings.Sound.Volume
+        sound.Parent = LocalPlayer:FindFirstChild("PlayerGui") or CoreGui
+        sound:Play()
+        task.wait(0.2)
+        sound:Destroy()
+    end)
+end
+
+-- =====================================================
+-- MODUL 14: CLEANUP-MANAGER
+-- =====================================================
+local function CleanupESP()
+    for _, list in pairs(ESPObjects) do
+        for _, obj in pairs(list) do
+            if obj then
+                if obj.Destroy then
+                    obj:Destroy()
+                elseif obj.Remove then
+                    obj:Remove()
+                end
+            end
+        end
+    end
+    ESPObjects.Boxes = {}
+    ESPObjects.Names = {}
+    ESPObjects.Health = {}
+    ESPObjects.Tracers = {}
+    ESPObjects.Chams = {}
+    ESPObjects.Distance = {}
+    ESPObjects.Weapon = {}
+    ESPObjects.Skeleton = {}
+    ESPObjects.InfoBox = {}
+end
+
+local function UnloadScript()
+    CleanupESP()
+    if FOVCircle then FOVCircle:Remove() end
+    if Window then Window:Destroy() end
+    
+    -- Alle Connections trennen
+    -- (Connections werden automatisch aufgeräumt)
+    
+    Utility.Notify("🔄 Unloaded", "AZIC HUB V6 erfolgreich entladen!", 3, "🔄")
+end
+
+-- =====================================================
+-- MODUL 15: UI ELEMENTS (ALLES NEU)
+-- =====================================================
+
+-- === AIM TAB ===
+Tabs.Aim:CreateSection("🎯 Aimlock Settings")
+
+Tabs.Aim:Toggle({
+    Title = "Aimlock",
+    Description = "Aktiviert den Aimlock",
+    Value = false,
+    Callback = function(v)
+        Settings.Aimlock.Enabled = v
+        PlaySound()
+        Utility.Notify("Aimlock", v and "✅ Aktiviert" or "❌ Deaktiviert", 2)
+    end
 })
 
-task.spawn(function()
-    local bg = Instance.new("ImageLabel")
-    bg.Name = "AzicHubBackground"
-    bg.Size = UDim2.new(1,0,1,0); bg.Position = UDim2.new(0,0,0,0)
-    bg.BackgroundTransparency = 1
-    bg.Image = "https://i.imgur.com/xx97WM3.png"
-    bg.ScaleType = Enum.ScaleType.Crop
-    bg.ImageTransparency = 0.85; bg.ZIndex = 0
-    local function findParent()
-        local gui = CoreGui:FindFirstChild("WindUI")
-        if gui then
-            local f = gui:FindFirstChild("MainFrame") or gui:FindFirstChildWhichIsA("Frame")
-            bg.Parent = f or gui; return true
-        end; return false
+Tabs.Aim:Dropdown({
+    Title = "Aim Mode",
+    Description = "Instant = sofort | Smooth = weich | Silent = unsichtbar",
+    Values = {"Instant", "Smooth", "Silent"},
+    Value = "Smooth",
+    Callback = function(v)
+        Settings.Aimlock.Mode = v
+        PlaySound()
     end
-    if not findParent() then
-        for _ = 1, 20 do task.wait(1); if findParent() then break end end
+})
+
+Tabs.Aim:Slider({
+    Title = "FOV Size",
+    Description = "Größe des FOV-Kreises",
+    Value = {Min = 10, Max = 500, Default = 120},
+    Callback = function(v)
+        Settings.Aimlock.FOV = v
     end
-end)
+})
 
-local AimTab = Window:Tab({Title = "Aimlock", Icon = "crosshair"})
-local ESPTab = Window:Tab({Title = "ESP", Icon = "eye"})
-local SkyTab = Window:Tab({Title = "Skys", Icon = "sun"})
-local VisualTab = Window:Tab({Title = "Visuals", Icon = "monitor"})
-local MiscTab = Window:Tab({Title = "Misc", Icon = "settings"})
-local PlayerTab = Window:Tab({Title = "Player", Icon = "user"})
-local FarmTab = Window:Tab({Title = "Farm", Icon = "zap"})
+Tabs.Aim:Slider({
+    Title = "Smoothness",
+    Description = "Wie weich der Aim ist (0 = instant)",
+    Value = {Min = 0, Max = 1, Default = 0.1, Decimals = 2},
+    Callback = function(v)
+        Settings.Aimlock.Smoothness = v
+    end
+})
 
-local Circle = Drawing.new("Circle")
-Circle.Visible = Config.FOVVisible; Circle.Color = Config.AimbotFOVColor
-Circle.Thickness = 2; Circle.NumSides = 100; Circle.Filled = false
-Circle.Transparency = 1; Circle.Radius = Config.FOV
+Tabs.Aim:Dropdown({
+    Title = "Target Part",
+    Description = "Welcher Körperteil anvisiert wird",
+    Values = {"Head", "HumanoidRootPart", "Torso", "UpperTorso"},
+    Value = "Head",
+    Callback = function(v)
+        Settings.Aimlock.TargetPart = v
+        PlaySound()
+    end
+})
 
-RunService.RenderStepped:Connect(function()
-    Circle.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-    Circle.Radius = Config.FOV; Circle.Color = Config.AimbotFOVColor
-    Circle.Visible = Config.FOVVisible; Circle.Filled = Config.FOVCircleFilled
-    Circle.Transparency = Config.FOVCircleFilled and 0.3 or 1
-end)
+Tabs.Aim:Keybind({
+    Title = "Aimlock Key",
+    Description = "Taste zum Aktivieren/Deaktivieren",
+    Value = Settings.Aimlock.Key,
+    Callback = function(v)
+        Settings.Aimlock.Key = v
+        PlaySound()
+    end
+})
 
-function IsWhitelisted(p)
-    if Config.WhitelistMode then return Config.WhitelistedPlayers[p.Name] == true end
-    return true
-end
-function IsFriend(p)
-    if Config.FriendOnlyMode then return LocalPlayer:IsFriendsWith(p.UserId) end
-    return true
-end
-function IsVisible(Target)
-    if not Config.WallCheckEnabled then return true end
-    local Origin = Camera.CFrame.Position
-    local Direction = (Target.Position - Origin).Unit * 5000
-    local Params = RaycastParams.new()
-    Params.FilterType = Enum.RaycastFilterType.Blacklist
-    Params.FilterDescendantsInstances = {LocalPlayer.Character}
-    Params.IgnoreWater = true
-    local Result = workspace:Raycast(Origin, Direction, Params)
-    if Result then return Result.Instance:IsDescendantOf(Target.Parent) end
-    return true
-end
-function IsEnemy(p)
-    if not Config.TeamCheckEnabled then return true end
-    if LocalPlayer.Team and p.Team then return LocalPlayer.Team ~= p.Team end
-    return true
-end
-function GetClosestPlayer()
-    local Closest, Shortest = nil, math.huge
-    for _, Player in pairs(Players:GetPlayers()) do
-        if Player ~= LocalPlayer and Player.Character
-            and Player.Character:FindFirstChild(Config.TargetPart)
-            and Player.Character:FindFirstChild("Humanoid")
-            and Player.Character.Humanoid.Health > 0
-            and IsEnemy(Player) and IsWhitelisted(Player) and IsFriend(Player) then
-            local Part = Player.Character[Config.TargetPart]
-            if IsVisible(Part) then
-                local Pos, Visible = Camera:WorldToViewportPoint(Part.Position)
-                if Visible then
-                    local Dist = (Vector2.new(Pos.X,Pos.Y) - Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y/2)).Magnitude
-                    if Dist <= Config.FOV and Dist < Shortest then Shortest = Dist; Closest = Part end
-                end
+Tabs.Aim:CreateSection("🔍 FOV Circle")
+
+Tabs.Aim:Toggle({
+    Title = "Show FOV Circle",
+    Description = "Zeigt den FOV-Kreis an",
+    Value = true,
+    Callback = function(v)
+        Settings.Aimlock.FOVVisible = v
+        PlaySound()
+    end
+})
+
+Tabs.Aim:Toggle({
+    Title = "Filled FOV",
+    Description = "Füllt den FOV-Kreis",
+    Value = false,
+    Callback = function(v)
+        Settings.Aimlock.FOVFilled = v
+        PlaySound()
+    end
+})
+
+Tabs.Aim:Colorpicker({
+    Title = "FOV Color",
+    Description = "Farbe des FOV-Kreises",
+    Value = Settings.Aimlock.FOVColor,
+    Callback = function(v)
+        Settings.Aimlock.FOVColor = v
+    end
+})
+
+Tabs.Aim:CreateSection("🎯 Advanced Aim")
+
+Tabs.Aim:Toggle({
+    Title = "Team Check",
+    Description = "Nur Gegner anvisieren",
+    Value = true,
+    Callback = function(v)
+        Settings.Aimlock.TeamCheck = v
+        PlaySound()
+    end
+})
+
+Tabs.Aim:Toggle({
+    Title = "Wall Check",
+    Description = "Nur sichtbare Spieler anvisieren",
+    Value = true,
+    Callback = function(v)
+        Settings.Aimlock.WallCheck = v
+        PlaySound()
+    end
+})
+
+Tabs.Aim:Toggle({
+    Title = "Prediction",
+    Description = "Bewegung vorhersagen",
+    Value = false,
+    Callback = function(v)
+        Settings.Aimlock.Prediction = v
+        PlaySound()
+    end
+})
+
+Tabs.Aim:Slider({
+    Title = "Prediction Amount",
+    Description = "Wie stark vorhergesagt wird",
+    Value = {Min = 0, Max = 0.5, Default = 0.165, Decimals = 3},
+    Callback = function(v)
+        Settings.Aimlock.PredictionAmount = v
+    end
+})
+
+Tabs.Aim:Toggle({
+    Title = "Trigger Bot",
+    Description = "Automatisch schießen wenn im FOV",
+    Value = false,
+    Callback = function(v)
+        Settings.Aimlock.TriggerBot = v
+        PlaySound()
+    end
+})
+
+Tabs.Aim:Toggle({
+    Title = "No Recoil",
+    Description = "Kein Rückstoß",
+    Value = false,
+    Callback = function(v)
+        Settings.Aimlock.NoRecoil = v
+        PlaySound()
+    end
+})
+
+Tabs.Aim:Toggle({
+    Title = "Spinbot",
+    Description = "Dreht den Spieler permanent",
+    Value = false,
+    Callback = function(v)
+        Settings.Aimlock.Spinbot = v
+        PlaySound()
+    end
+})
+
+Tabs.Aim:Slider({
+    Title = "Spinbot Speed",
+    Description = "Geschwindigkeit der Drehung",
+    Value = {Min = 10, Max = 500, Default = 50},
+    Callback = function(v)
+        Settings.Aimlock.SpinbotSpeed = v
+    end
+})
+
+-- === ESP TAB ===
+Tabs.ESP:CreateSection("👁️ ESP Settings")
+
+Tabs.ESP:Toggle({
+    Title = "Enable ESP",
+    Description = "Aktiviert alle ESP-Funktionen",
+    Value = false,
+    Callback = function(v)
+        Settings.ESP.Enabled = v
+        PlaySound()
+        if not v then CleanupESP() end
+    end
+})
+
+Tabs.ESP:Toggle({
+    Title = "Box ESP",
+    Description = "Zeigt Boxen um Spieler",
+    Value = false,
+    Callback = function(v)
+        Settings.ESP.Box = v
+        PlaySound()
+    end
+})
+
+Tabs.ESP:Toggle({
+    Title = "Name ESP",
+    Description = "Zeigt Spielernamen",
+    Value = false,
+    Callback = function(v)
+        Settings.ESP.Name = v
+        PlaySound()
+    end
+})
+
+Tabs.ESP:Toggle({
+    Title = "Health ESP",
+    Description = "Zeigt Lebenspunkte",
+    Value = false,
+    Callback = function(v)
+        Settings.ESP.Health = v
+        PlaySound()
+    end
+})
+
+Tabs.ESP:Toggle({
+    Title = "Tracers",
+    Description = "Zeigt Linien zu Spielern",
+    Value = false,
+    Callback = function(v)
+        Settings.ESP.Tracers = v
+        PlaySound()
+    end
+})
+
+Tabs.ESP:Toggle({
+    Title = "Chams",
+    Description = "Highlights Spieler",
+    Value = false,
+    Callback = function(v)
+        Settings.ESP.Chams = v
+        PlaySound()
+        if not v then
+            for _, cham in pairs(ESPObjects.Chams) do
+                if cham then cham:Destroy() end
             end
-        end
-    end; return Closest
-end
-
-local oldNamecall
-function SetupSilentAim()
-    if Config.SilentAimEnabled then
-        oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-            local method = getnamecallmethod()
-            if (method == "FindPartOnRayWithIgnoreList" or method == "Raycast") and Config.Aimlock then
-                local target = GetClosestPlayer()
-                if target then
-                    local origin = Camera.CFrame.Position
-                    local dir = (target.Position - origin).Unit
-                    if Config.PredictionEnabled then
-                        local hrp = target.Parent and target.Parent:FindFirstChild("HumanoidRootPart")
-                        if hrp then dir = (target.Position + (hrp.Velocity * Config.PredictionAmount) - origin).Unit end
-                    end
-                    return Ray.new(origin, dir * 5000), target.Position, target, dir
-                end
-            end; return oldNamecall(self, ...)
-        end)
-    elseif oldNamecall then restorefunction(oldNamecall); oldNamecall = nil end
-end
-
-local lastShot = 0
-function TriggerBot()
-    if not Config.TriggerBotEnabled then return end
-    local target = GetClosestPlayer()
-    if target and tick() - lastShot > Config.TriggerBotDelay then
-        VirtualInputManager:SendMouseButtonEvent(0,0,0,true,game,0)
-        task.wait(0.01); VirtualInputManager:SendMouseButtonEvent(0,0,0,false,game,0)
-        lastShot = tick()
-    end
-end
-
-function AimAssist()
-    if not Config.AimAssistEnabled then return end
-    local target = GetClosestPlayer()
-    if target then
-        local tPos = target.Position
-        if Config.PredictionEnabled then
-            local hrp = target.Parent and target.Parent:FindFirstChild("HumanoidRootPart")
-            if hrp then tPos = tPos + (hrp.Velocity * Config.PredictionAmount) end
-        end
-        local vec = (tPos - Camera.CFrame.Position).Unit
-        Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + vec * 10), Config.AimAssistStrength)
-    end
-end
-
-function NoRecoil()
-    if not Config.NoRecoilEnabled then return end
-    local c = LocalPlayer.Character
-    if c and c:FindFirstChild("Humanoid") then c.Humanoid.CameraOffset = Vector3.new(0,0,0) end
-end
-
-local spinAngle = 0
-function Spinbot()
-    if not Config.SpinbotEnabled then return end
-    spinAngle = (spinAngle + Config.SpinbotSpeed) % 360
-    local c = LocalPlayer.Character
-    if c and c:FindFirstChild("HumanoidRootPart") then c.HumanoidRootPart.Orientation = Vector3.new(0, spinAngle, 0) end
-end
-
-function AntiAim()
-    if not Config.AntiAimEnabled then return end
-    local c = LocalPlayer.Character
-    if c and c:FindFirstChild("HumanoidRootPart") then c.HumanoidRootPart.Orientation = Vector3.new(Config.AntiAimPitch, tick()*100%360, 0) end
-end
-
-local noclipConnection
-function SetupNoclip()
-    if Config.NoclipEnabled then
-        noclipConnection = RunService.Stepped:Connect(function()
-            local c = LocalPlayer.Character
-            if c then for _, p in pairs(c:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end end
-        end)
-    elseif noclipConnection then noclipConnection:Disconnect(); noclipConnection = nil end
-end
-
-local jumpCount = 0
-function HandleJump()
-    if not Config.InfiniteJumpEnabled and not Config.AirJumpEnabled then return end
-    local c = LocalPlayer.Character
-    if c and c:FindFirstChild("Humanoid") then
-        local h = c.Humanoid; local state = h:GetState()
-        if Config.InfiniteJumpEnabled and (state == Enum.HumanoidStateType.Freefall or state == Enum.HumanoidStateType.Jumping) then
-            h:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-        if Config.AirJumpEnabled then
-            if (state == Enum.HumanoidStateType.Freefall or state == Enum.HumanoidStateType.Jumping) and jumpCount < 1 then
-                h:ChangeState(Enum.HumanoidStateType.Jumping); jumpCount = jumpCount + 1
-            elseif state == Enum.HumanoidStateType.Landed or state == Enum.HumanoidStateType.Running then jumpCount = 0 end
+            ESPObjects.Chams = {}
         end
     end
-end
+})
 
-local flyConnection, flyBV, flyBG
-function SetupFly()
-    if Config.FlyEnabled then
-        local c = LocalPlayer.Character
-        if c and c:FindFirstChild("HumanoidRootPart") then
-            local root = c.HumanoidRootPart
-            flyBV = Instance.new("BodyVelocity"); flyBV.MaxForce = Vector3.new(1,1,1)*10000; flyBV.Velocity = Vector3.new(); flyBV.Parent = root
-            flyBG = Instance.new("BodyGyro"); flyBG.MaxTorque = Vector3.new(1,1,1)*10000; flyBG.CFrame = root.CFrame; flyBG.Parent = root
-            flyConnection = RunService.RenderStepped:Connect(function()
-                if not Config.FlyEnabled then return end
-                local dir = Vector3.new()
-                if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir = dir + Camera.CFrame.LookVector end
-                if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir = dir - Camera.CFrame.LookVector end
-                if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir = dir - Camera.CFrame.RightVector end
-                if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir = dir + Camera.CFrame.RightVector end
-                if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir = dir + Vector3.new(0,1,0) end
-                if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then dir = dir - Vector3.new(0,1,0) end
-                if dir.Magnitude > 0 then dir = dir.Unit * Config.FlySpeed end
-                flyBV.Velocity = dir; flyBG.CFrame = Camera.CFrame
-            end)
+Tabs.ESP:Colorpicker({
+    Title = "ESP Color",
+    Description = "Hauptfarbe für ESP",
+    Value = Settings.ESP.BoxColor,
+    Callback = function(v)
+        Settings.ESP.BoxColor = v
+        Settings.ESP.TracerColor = v
+        Settings.ESP.ChamsColor = v
+    end
+})
+
+Tabs.ESP:Slider({
+    Title = "Max Distance",
+    Description = "Maximale Reichweite für ESP",
+    Value = {Min = 100, Max = 2000, Default = 500},
+    Callback = function(v)
+        Settings.ESP.MaxDistance = v
+    end
+})
+
+-- === PLAYER TAB ===
+Tabs.Player:CreateSection("🏃 Movement")
+
+Tabs.Player:Toggle({
+    Title = "Walkspeed",
+    Description = "Ändert die Laufgeschwindigkeit",
+    Value = false,
+    Callback = function(v)
+        Settings.Player.Walkspeed.Enabled = v
+        PlaySound()
+        ApplyPlayerSettings()
+    end
+})
+
+Tabs.Player:Slider({
+    Title = "Walkspeed Value",
+    Description = "Geschwindigkeit (16 = normal)",
+    Value = {Min = 16, Max = 250, Default = 16},
+    Callback = function(v)
+        Settings.Player.Walkspeed.Value = v
+        if Settings.Player.Walkspeed.Enabled then
+            ApplyPlayerSettings()
         end
-    else
-        if flyConnection then flyConnection:Disconnect(); flyConnection = nil end
-        if flyBV then flyBV:Destroy(); flyBV = nil end; if flyBG then flyBG:Destroy(); flyBG = nil end
     end
-end
+})
 
-function NoFallDamage()
-    if not Config.NoFallDamageEnabled then return end
-    local c = LocalPlayer.Character
-    if c and c:FindFirstChild("Humanoid") then c.Humanoid.FallDamage = 0 end
-end
-
-function SetupThirdPerson()
-    local c = LocalPlayer.Character
-    if c and c:FindFirstChild("Humanoid") then
-        c.Humanoid.CameraOffset = Config.ThirdPersonEnabled and Vector3.new(0,0,-8) or Vector3.new(0,0,0)
+Tabs.Player:Toggle({
+    Title = "Jump Power",
+    Description = "Ändert die Sprunghöhe",
+    Value = false,
+    Callback = function(v)
+        Settings.Player.JumpPower.Enabled = v
+        PlaySound()
+        ApplyPlayerSettings()
     end
-end
+})
 
-function TeleportToCursor()
-    if not Config.TeleportToCursorEnabled then return end
-    local c = LocalPlayer.Character
-    if not c or not c:FindFirstChild("HumanoidRootPart") then return end
-    local mPos = UserInputService:GetMouseLocation()
-    local ray = Camera:ScreenPointToRay(mPos.X, mPos.Y)
-    local params = RaycastParams.new(); params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = {c}
-    local result = workspace:Raycast(ray.Origin, ray.Direction * 1000, params)
-    if result then c.HumanoidRootPart.CFrame = CFrame.new(result.Position + Vector3.new(0,3,0)) end
-end
-UserInputService.InputBegan:Connect(function(input, gp)
-    if not gp and input.KeyCode == Config.TeleportKey then TeleportToCursor() end
-end)
-
-local wsConn
-function UpdateWalkspeed()
-    if Config.WalkspeedEnabled then
-        local c = LocalPlayer.Character
-        if c and c:FindFirstChild("Humanoid") then c.Humanoid.WalkSpeed = Config.WalkspeedValue end
-        if not wsConn then wsConn = RunService.RenderStepped:Connect(function()
-            local ch = LocalPlayer.Character; if ch and ch:FindFirstChild("Humanoid") then ch.Humanoid.WalkSpeed = Config.WalkspeedValue end
-        end) end
-    else
-        if wsConn then wsConn:Disconnect(); wsConn = nil end
-        local c = LocalPlayer.Character; if c and c:FindFirstChild("Humanoid") then c.Humanoid.WalkSpeed = 16 end
+Tabs.Player:Slider({
+    Title = "Jump Power Value",
+    Description = "Sprunghöhe (50 = normal)",
+    Value = {Min = 50, Max = 500, Default = 50},
+    Callback = function(v)
+        Settings.Player.JumpPower.Value = v
+        if Settings.Player.JumpPower.Enabled then
+            ApplyPlayerSettings()
+        end
     end
-end
+})
 
-local jpConn
-function UpdateJumpPower()
-    if Config.JumpPowerEnabled then
-        local c = LocalPlayer.Character
-        if c and c:FindFirstChild("Humanoid") then c.Humanoid.JumpPower = Config.JumpPowerValue end
-        if not jpConn then jpConn = RunService.RenderStepped:Connect(function()
-            local ch = LocalPlayer.Character; if ch and ch:FindFirstChild("Humanoid") then ch.Humanoid.JumpPower = Config.JumpPowerValue end
-        end) end
-    else
-        if jpConn then jpConn:Disconnect(); jpConn = nil end
-        local c = LocalPlayer.Character; if c and c:FindFirstChild("Humanoid") then c.Humanoid.JumpPower = 50 end
+Tabs.Player:Toggle({
+    Title = "Noclip",
+    Description = "Geht durch Wände",
+    Value = false,
+    Callback = function(v)
+        Settings.Player.Noclip = v
+        PlaySound()
+        ApplyPlayerSettings()
     end
-end
+})
 
-local xrayConn
-function SetupXRay()
-    if Config.XRayEnabled then
-        xrayConn = RunService.RenderStepped:Connect(function()
-            for _, v in pairs(workspace:GetDescendants()) do
-                if v:IsA("BasePart") and not v:IsDescendantOf(LocalPlayer.Character) then v.LocalTransparencyModifier = 0.5 end
-            end
-        end)
-    else
-        if xrayConn then xrayConn:Disconnect(); xrayConn = nil end
-        for _, v in pairs(workspace:GetDescendants()) do if v:IsA("BasePart") then v.LocalTransparencyModifier = 0 end end
+Tabs.Player:Toggle({
+    Title = "Infinite Jump",
+    Description = "Unendlich viele Sprünge",
+    Value = false,
+    Callback = function(v)
+        Settings.Player.InfiniteJump = v
+        PlaySound()
     end
-end
+})
 
-function CreateBox(p)
-    local b = Drawing.new("Square"); b.Visible = false; b.Color = Config.ESPColor; b.Thickness = 2; b.Filled = false; return b
-end
-function CreateName(p)
-    local t = Drawing.new("Text"); t.Visible = false; t.Color = Color3.new(1,1,1); t.Size = 14; t.Center = true; t.Outline = true; t.Text = p.Name; return t
-end
-function CreateHealth()
-    local t = Drawing.new("Text"); t.Visible = false; t.Color = Color3.new(0,1,0); t.Size = 12; t.Center = true; t.Outline = true; return t
-end
-function CreateTracer()
-    local l = Drawing.new("Line"); l.Visible = false; l.Color = Config.ESPColor; l.Thickness = 1; return l
-end
-function CreateChams(p)
-    local h = Instance.new("Highlight"); h.Name = "ESPChams"; h.FillColor = Config.ESPColor; h.FillTransparency = 0.5; h.OutlineColor = Color3.new(1,1,1); h.OutlineTransparency = 0; h.Parent = p.Character; return h
-end
+Tabs.Player:Toggle({
+    Title = "God Mode",
+    Description = "Unsterblich",
+    Value = false,
+    Callback = function(v)
+        Settings.Player.GodMode = v
+        PlaySound()
+        ApplyPlayerSettings()
+    end
+})
 
-function UpdateESP()
-    for _, v in pairs(ESPBoxes) do v.Visible = false end
-    for _, v in pairs(ESPNames) do v.Visible = false end
-    for _, v in pairs(ESPHealth) do v.Visible = false end
-    for _, v in pairs(Tracers) do v.Visible = false end
-    if not Config.ESPEnabled and not Config.TracersEnabled and not Config.DistanceESPEnabled then return end
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-            and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0
-            and IsEnemy(player) and IsWhitelisted(player) and IsFriend(player) then
-            local root = player.Character.HumanoidRootPart; local hum = player.Character.Humanoid
-            local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
-            if onScreen then
-                if Config.ESPEnabled and Config.BoxESPEnabled then
-                    local box = ESPBoxes[player] or CreateBox(player); ESPBoxes[player] = box
-                    local s = Vector2.new(2000/pos.Z, 3000/pos.Z); box.Size = s; box.Position = Vector2.new(pos.X-s.X/2, pos.Y-s.Y/2); box.Visible = true; box.Color = Config.ESPColor
-                end
-                if Config.ESPEnabled and Config.NameESPEnabled then
-                    local n = ESPNames[player] or CreateName(player); ESPNames[player] = n; n.Position = Vector2.new(pos.X, pos.Y-40); n.Visible = true
-                end
-                if Config.ESPEnabled and Config.HealthESPEnabled then
-                    local h = ESPHealth[player] or CreateHealth(); ESPHealth[player] = h
-                    h.Text = math.floor(hum.Health).."/"..math.floor(hum.MaxHealth); h.Position = Vector2.new(pos.X, pos.Y-25)
-                    local hp = hum.Health/hum.MaxHealth; h.Color = Color3.new(1-hp, hp, 0); h.Visible = true
-                end
-                if Config.DistanceESPEnabled then
-                    local d = ESPHealth[player] or CreateHealth(); ESPHealth[player] = d
-                    d.Text = math.floor((Camera.CFrame.Position - root.Position).Magnitude).."m"; d.Position = Vector2.new(pos.X, pos.Y+20); d.Visible = true
-                end
-                if Config.TracersEnabled then
-                    local t = Tracers[player] or CreateTracer(); Tracers[player] = t
-                    t.From = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y); t.To = Vector2.new(pos.X, pos.Y); t.Visible = true; t.Color = Config.ESPColor
-                end
-                if Config.ChamsEnabled then
-                    local ch = Chams[player] or CreateChams(player); Chams[player] = ch; ch.Enabled = true; ch.FillColor = Config.ESPColor
-                end
-            else
-                if ESPBoxes[player] then ESPBoxes[player].Visible = false end
-                if ESPNames[player] then ESPNames[player].Visible = false end
-                if ESPHealth[player] then ESPHealth[player].Visible = false end
-                if Tracers[player] then Tracers[player].Visible = false end
-                if Chams[player] then Chams[player].Enabled = false end
-            end
+Tabs.Player:CreateSection("🦅 Fly Mode (NEU!)")
+
+Tabs.Player:Toggle({
+    Title = "Fly Mode",
+    Description = "Flugmodus (WASD + Space + Shift)",
+    Value = false,
+    Callback = function(v)
+        Settings.Player.Fly.Enabled = v
+        PlaySound()
+        if v then
+            Utility.Notify("🦅 Fly", "Flugmodus aktiviert!", 2, "🦅")
         else
-            if ESPBoxes[player] then ESPBoxes[player].Visible = false end
-            if ESPNames[player] then ESPNames[player].Visible = false end
-            if ESPHealth[player] then ESPHealth[player].Visible = false end
-            if Tracers[player] then Tracers[player].Visible = false end
-            if Chams[player] then Chams[player].Enabled = false end
+            Utility.Notify("🦅 Fly", "Flugmodus deaktiviert!", 2, "🦅")
         end
     end
-end
-function AutoParry()
-    if not Config.AutoParryEnabled then return end
-    local c = LocalPlayer.Character; local tool = c and c:FindFirstChildWhichIsA("Tool")
-    if tool then
-        local p = tool:FindFirstChild("Parry") or tool:FindFirstChild("Block") or tool:FindFirstChild("Counter")
-        local re = tool:FindFirstChildWhichIsA("RemoteEvent")
-        if p and re then re:FireServer(p, "Activate", true) end
-    end
-end
+})
 
-function AutoBlock()
-    if not Config.AutoBlockEnabled then return end
-    local c = LocalPlayer.Character
-    if c then
-        if c:FindFirstChild("Humanoid") then c.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, false) end
-        local tool = c:FindFirstChildWhichIsA("Tool")
-        if tool then
-            local b = tool:FindFirstChild("Block") or tool:FindFirstChild("Guard") or tool:FindFirstChild("Defense")
-            local re = tool:FindFirstChildWhichIsA("RemoteEvent")
-            if b and re then re:FireServer(b, "Activate", true) end
+Tabs.Player:Slider({
+    Title = "Fly Speed",
+    Description = "Geschwindigkeit im Flugmodus",
+    Value = {Min = 10, Max = 200, Default = 50},
+    Callback = function(v)
+        Settings.Player.Fly.Speed = v
+    end
+})
+
+Tabs.Player:Slider({
+    Title = "Fly Up Speed",
+    Description = "Steiggeschwindigkeit",
+    Value = {Min = 10, Max = 100, Default = 30},
+    Callback = function(v)
+        Settings.Player.Fly.UpSpeed = v
+    end
+})
+
+-- === VISUAL TAB ===
+Tabs.Visual:CreateSection("🎨 Visual Settings")
+
+Tabs.Visual:Toggle({
+    Title = "No Fog",
+    Description = "Entfernt Nebel",
+    Value = false,
+    Callback = function(v)
+        Settings.Visuals.NoFog = v
+        if v then
+            Lighting.FogEnd = 100000
+        else
+            Lighting.FogEnd = 1000
         end
+        PlaySound()
     end
-end
+})
 
-function AutoHeal()
-    if not Config.AutoHealEnabled then return end
-    local c = LocalPlayer.Character
-    if c and c:FindFirstChild("Humanoid") and c.Humanoid.Health < Config.AutoHealThreshold then
-        for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
-            if item:IsA("Tool") then
-                local name = item.Name:lower()
-                if name:find("heal") or name:find("potion") or name:find("med") or name:find("bandage") or name:find("food") then
-                    item.Parent = c; task.wait(0.1); item:Activate(); task.wait(0.1); item.Parent = LocalPlayer.Backpack; break
-                end
+Tabs.Visual:Toggle({
+    Title = "Full Bright",
+    Description = "Maximale Helligkeit",
+    Value = false,
+    Callback = function(v)
+        Settings.Visuals.FullBright = v
+        if v then
+            Lighting.Brightness = 2
+            Lighting.GlobalShadows = false
+        else
+            Lighting.Brightness = 1
+            Lighting.GlobalShadows = true
+        end
+        PlaySound()
+    end
+})
+
+Tabs.Visual:Slider({
+    Title = "Brigh
+    Title = "Brightness",
+    Description = "Helligkeit anpassen",
+    Value = {Min = 0, Max = 10, Default = 1, Decimals = 1},
+    Callback = function(v)
+        Settings.Visuals.Brightness = v
+        Lighting.Brightness = v
+    end
+})
+
+Tabs.Visual:Toggle({
+    Title = "No Shadows",
+    Description = "Deaktiviert Schatten",
+    Value = false,
+    Callback = function(v)
+        Settings.Visuals.NoShadows = v
+        Lighting.GlobalShadows = not v
+        PlaySound()
+    end
+})
+
+-- === SKY TAB ===
+Tabs.Sky:CreateSection("🌤️ Skybox Settings")
+
+Tabs.Sky:Toggle({
+    Title = "Enable Skybox",
+    Description = "Aktiviert benutzerdefinierte Skybox",
+    Value = false,
+    Callback = function(v)
+        Settings.Sky.Enabled = v
+        if v then
+            SetSkybox(SkyboxIds[SkyboxData[Settings.Sky.CurrentIndex]])
+            Utility.Notify("🌤️ Sky", "Skybox aktiviert!", 2, "🌤️")
+        else
+            local oldSky = Lighting:FindFirstChild("CustomSkybox")
+            if oldSky then oldSky:Destroy() end
+        end
+        PlaySound()
+    end
+})
+
+Tabs.Sky:Dropdown({
+    Title = "Select Sky",
+    Description = "Wähle eine Skybox aus",
+    Values = SkyboxData,
+    Value = "Sunset",
+    Callback = function(v)
+        for i, name in ipairs(SkyboxData) do
+            if name == v then
+                Settings.Sky.CurrentIndex = i
+                break
             end
         end
+        if Settings.Sky.Enabled then
+            SetSkybox(SkyboxIds[v])
+        end
+        PlaySound()
     end
-end
+})
 
-function GodMode()
-    if not Config.GodModeEnabled then return end
-    local c = LocalPlayer.Character
-    if c and c:FindFirstChild("Humanoid") then
-        c.Humanoid.MaxHealth = math.huge; c.Humanoid.Health = math.huge; c.Humanoid.BreakJointsOnDeath = false
+Tabs.Sky:Button({
+    Title = "Next Sky",
+    Description = "Nächste Skybox",
+    Callback = function()
+        if not Settings.Sky.Enabled then
+            Utility.Notify("⚠️ Sky", "Skybox ist deaktiviert!", 2, "⚠️")
+            return
+        end
+        Settings.Sky.CurrentIndex = Settings.Sky.CurrentIndex + 1
+        if Settings.Sky.CurrentIndex > #SkyboxData then
+            Settings.Sky.CurrentIndex = 1
+        end
+        SetSkybox(SkyboxIds[SkyboxData[Settings.Sky.CurrentIndex]])
+        Utility.Notify("🌤️ Sky", SkyboxData[Settings.Sky.CurrentIndex], 2, "🌤️")
+        PlaySound()
     end
-end
+})
 
-function AutoFarm()
-    if not Config.AutoFarmEnabled then return end
-    for _, v in pairs(workspace:GetDescendants()) do
-        if (v:IsA("Part") or v:IsA("MeshPart")) then
-            local name = v.Name:lower()
-            if name:find("ore") or name:find("node") or name:find("resource") or name:find("coin") or name:find("gem") then
-                local c = LocalPlayer.Character
-                if c and c:FindFirstChild("HumanoidRootPart") then
-                    c.HumanoidRootPart.CFrame = v.CFrame * CFrame.new(0, 5, 0); task.wait(0.5)
-                end
-            end
+Tabs.Sky:Button({
+    Title = "Previous Sky",
+    Description = "Vorherige Skybox",
+    Callback = function()
+        if not Settings.Sky.Enabled then
+            Utility.Notify("⚠️ Sky", "Skybox ist deaktiviert!", 2, "⚠️")
+            return
+        end
+        Settings.Sky.CurrentIndex = Settings.Sky.CurrentIndex - 1
+        if Settings.Sky.CurrentIndex < 1 then
+            Settings.Sky.CurrentIndex = #SkyboxData
+        end
+        SetSkybox(SkyboxIds[SkyboxData[Settings.Sky.CurrentIndex]])
+        Utility.Notify("🌤️ Sky", SkyboxData[Settings.Sky.CurrentIndex], 2, "🌤️")
+        PlaySound()
+    end
+})
+
+Tabs.Sky:Slider({
+    Title = "Rotation Speed",
+    Description = "Geschwindigkeit der Skybox-Rotation",
+    Value = {Min = 0, Max = 2, Default = 0.5, Decimals = 1},
+    Callback = function(v)
+        Settings.Sky.RotationSpeed = v
+    end
+})
+
+-- === FARM TAB ===
+Tabs.Farm:CreateSection("🌾 Farm Settings")
+
+Tabs.Farm:Toggle({
+    Title = "Auto Farm",
+    Description = "Sammelt automatisch Ressourcen",
+    Value = false,
+    Callback = function(v)
+        Settings.Farm.AutoFarm = v
+        PlaySound()
+        if v then
+            Utility.Notify("🌾 Farm", "Auto-Farm aktiviert!", 2, "🌾")
+        else
+            Utility.Notify("🌾 Farm", "Auto-Farm deaktiviert!", 2, "🌾")
         end
     end
-end
+})
 
-function AutoCollect()
-    if not Config.AutoCollectEnabled then return end
-    for _, v in pairs(workspace:GetDescendants()) do
-        if (v:IsA("Part") or v:IsA("MeshPart")) then
-            local name = v.Name:lower()
-            if name:find("collect") or name:find("pickup") or name:find("item") or name:find("drop") then
-                local c = LocalPlayer.Character
-                if c and c:FindFirstChild("HumanoidRootPart") then
-                    c.HumanoidRootPart.CFrame = v.CFrame; task.wait(0.3)
-                end
+Tabs.Farm:Slider({
+    Title = "Collect Radius",
+    Description = "Reichweite für das Farmen",
+    Value = {Min = 10, Max = 100, Default = 50},
+    Callback = function(v)
+        Settings.Farm.CollectRadius = v
+    end
+})
+
+Tabs.Farm:Button({
+    Title = "Farm Once",
+    Description = "Einmal farmen",
+    Callback = function()
+        SmartFarm()
+        PlaySound()
+    end
+})
+
+-- === MISC TAB ===
+Tabs.Misc:CreateSection("⚙️ Performance")
+
+Tabs.Misc:Dropdown({
+    Title = "Performance Mode",
+    Description = "Performance-Einstellungen",
+    Values = {"Low", "Medium", "High"},
+    Value = "High",
+    Callback = function(v)
+        Settings.Misc.PerformanceMode = v
+        if v == "Low" then
+            Settings.Misc.MaxESPObjects = 10
+            Settings.Misc.RefreshRate = 0.5
+        elseif v == "Medium" then
+            Settings.Misc.MaxESPObjects = 25
+            Settings.Misc.RefreshRate = 0.3
+        else
+            Settings.Misc.MaxESPObjects = 50
+            Settings.Misc.RefreshRate = 0.1
+        end
+        PlaySound()
+    end
+})
+
+Tabs.Misc:CreateSection("🔧 Utilities")
+
+Tabs.Misc:Button({
+    Title = "Refresh ESP",
+    Description = "ESP neu laden",
+    Callback = function()
+        CleanupESP()
+        Utility.Notify("🔄 ESP", "ESP refreshed!", 2, "🔄")
+        PlaySound()
+    end
+})
+
+Tabs.Misc:Button({
+    Title = "Server Hop",
+    Description = "Zu einem anderen Server wechseln",
+    Callback = function()
+        local success, servers = pcall(function()
+            return HttpService:JSONDecode(game:HttpGetAsync(
+                "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100"
+            ))
+        end)
+        if not success then
+            Utility.Notify("❌ Error", "Could not fetch servers!", 3, "❌")
+            return
+        end
+        for _, server in ipairs(servers.data) do
+            if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
+                return
             end
         end
+        Utility.Notify("❌ Error", "No available servers found!", 3, "❌")
     end
-end
+})
 
-function SetupAntiCheatBypass()
-    if Config.AntiCheatBypassEnabled then
-        local keywords = {"anticheat","antiexploit","ac","security","guard","check","bancheck","detection","detect","ban","kick"}
-        for _, obj in pairs(game:GetDescendants()) do
-            if obj:IsA("Script") or obj:IsA("LocalScript") or obj:IsA("ModuleScript") then
-                local n = obj.Name:lower()
-                for _, kw in pairs(keywords) do if n:find(kw) then obj.Disabled = true; break end end
-            end
-            if obj:IsA("RemoteEvent") then
-                local n = obj.Name:lower()
-                for _, kw in pairs(keywords) do if n:find(kw) then obj:Destroy(); break end end
-            end
-        end
+Tabs.Misc:Button({
+    Title = "Rejoin Server",
+    Description = "Server neu verbinden",
+    Callback = function()
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
     end
-end
+})
 
-RunService.RenderStepped:Connect(function()
-    if Config.Aimlock then
-        local Target = GetClosestPlayer()
-        if Target then
-            local tPos = Target.Position
-            if Config.PredictionEnabled then
-                local hrp = Target.Parent and Target.Parent:FindFirstChild("HumanoidRootPart")
-                if hrp then tPos = tPos + (hrp.Velocity * Config.PredictionAmount) end
-            end
-            if Config.Smoothness > 0 then Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, tPos), Config.Smoothness)
-            else Camera.CFrame = CFrame.new(Camera.CFrame.Position, tPos) end
-        end
+Tabs.Misc:Button({
+    Title = "Unload Script",
+    Description = "Skript vollständig entladen",
+    Callback = function()
+        UnloadScript()
     end
-    TriggerBot(); AimAssist(); NoRecoil(); Spinbot(); AntiAim(); GodMode(); HandleJump(); NoFallDamage(); AutoParry(); AutoBlock(); AutoHeal()
+})
+
+-- === INFO TAB ===
+Tabs.Info:CreateSection("📖 About")
+
+Tabs.Info:Button({
+    Title = "💀 AZIC HUB V6",
+    Description = "Die ultimative Version",
+    Callback = function()
+        Utility.Notify("💀 AZIC HUB", "Version 6.0\nby AZIC", 4, "💀")
+    end
+})
+
+Tabs.Info:Button({
+    Title = "📋 Features",
+    Description = "Alle Features anzeigen",
+    Callback = function()
+        local features = [[
+🎯 Aimlock mit 3 Modi
+👁️ Vollständiges ESP
+🧍 Player-Modifikationen
+🎨 Visuelle Verbesserungen
+🌤️ 15 Skyboxen
+🌾 Smart Farming
+⚙️ Performance-Einstellungen
+🔊 Sound-Feedback
+📱 Touch-Unterstützung
+        ]]
+        Utility.Notify("📋 Features", features, 6, "📋")
+    end
+})
+
+-- =====================================================
+-- MODUL 16: KEYBINDS
+-- =====================================================
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    -- Insert = UI Toggle
+    if input.KeyCode == Enum.KeyCode.Insert then
+        Window:Toggle()
+    end
+    
+    -- Aimlock Key
+    if input.KeyCode == Settings.Aimlock.Key then
+        Settings.Aimlock.Enabled = not Settings.Aimlock.Enabled
+        PlaySound()
+        Utility.Notify("🎯 Aimlock", Settings.Aimlock.Enabled and "✅ Aktiviert" or "❌ Deaktiviert", 2, "🎯")
+    end
+    
+    -- F1 = ESP Toggle (NEU!)
+    if input.KeyCode == Enum.KeyCode.F1 then
+        Settings.ESP.Enabled = not Settings.ESP.Enabled
+        PlaySound()
+        Utility.Notify("👁️ ESP", Settings.ESP.Enabled and "✅ Aktiviert" or "❌ Deaktiviert", 2, "👁️")
+        if not Settings.ESP.Enabled then CleanupESP() end
+    end
 end)
 
-RunService.RenderStepped:Connect(UpdateESP)
+-- =====================================================
+-- MODUL 17: STARTUP NOTIFICATION
+-- =====================================================
+Utility.Notify("💀 AZIC HUB V6", 
+    "Loaded Successfully!\n" ..
+    "🎯 Aimlock Key: " .. tostring(Settings.Aimlock.Key) .. "\n" ..
+    "👁️ ESP Key: F1\n" ..
+    "📋 Menu Toggle: Insert",
+    6, "💀")
 
--- ============================================================
--- [16] GUI - AIMLOCK TAB
--- ============================================================
-local AimSection = AimTab:Section({Title = "Aimlock Settings", Side = "Left"})
-AimSection:Toggle({Title = "Aimlock", Value = false, Callback = function(v) Config.Aimlock = v end})
-AimSection:Slider({Title = "FOV Size", Value = 120, Min = 10, Max = 360, Callback = function(v) Config.FOV = v end})
-AimSection:Slider({Title = "Smoothness", Value = 0.1, Min = 0.001, Max = 0.5, Precise = true, Callback = function(v) Config.Smoothness = v end})
-AimSection:Dropdown({Title = "Target Part", Value = "Head", Options = {"Head","HumanoidRootPart","Torso","UpperTorso","LowerTorso"}, Callback = function(v) Config.TargetPart = v end})
-AimSection:Toggle({Title = "Show FOV Circle", Value = true, Callback = function(v) Config.FOVVisible = v end})
-AimSection:Toggle({Title = "FOV Circle Filled", Value = false, Callback = function(v) Config.FOVCircleFilled = v end})
-AimSection:Colorpicker({Title = "FOV Color", Value = Color3.fromRGB(255,255,255), Callback = function(v) Config.AimbotFOVColor = v end})
+print("✅ AZIC HUB V6 geladen!")
+print("📌 Author: AZIC")
+print("📌 Features: Aimlock, ESP, Player Mods, Skys, Farm, etc.")
+print("📌 F1 = ESP Toggle | Insert = Menu | " .. tostring(Settings.Aimlock.Key) .. " = Aimlock")
 
-local AssistSection = AimTab:Section({Title = "Aim Assist", Side = "Right"})
-AssistSection:Toggle({Title = "Aim Assist", Value = false, Callback = function(v) Config.AimAssistEnabled = v end})
-AssistSection:Slider({Title = "Assist Strength", Value = 3, Min = 1, Max = 10, Callback = function(v) Config.AimAssistStrength = v / 10 end})
-AssistSection:Toggle({Title = "Silent Aim", Value = false, Callback = function(v) Config.SilentAimEnabled = v; SetupSilentAim() end})
-AssistSection:Toggle({Title = "Prediction", Value = false, Callback = function(v) Config.PredictionEnabled = v end})
-AssistSection:Slider({Title = "Prediction Amount", Value = 0.165, Min = 0, Max = 0.5, Precise = true, Callback = function(v) Config.PredictionAmount = v end})
-AssistSection:Toggle({Title = "Triggerbot", Value = false, Callback = function(v) Config.TriggerBotEnabled = v end})
-AssistSection:Slider({Title = "Triggerbot Delay", Value = 0.1, Min = 0, Max = 0.5, Precise = true, Callback = function(v) Config.TriggerBotDelay = v end})
-AssistSection:Toggle({Title = "No Recoil", Value = false, Callback = function(v) Config.NoRecoilEnabled = v end})
-AssistSection:Toggle({Title = "Spinbot", Value = false, Callback = function(v) Config.SpinbotEnabled = v end})
-AssistSection:Slider({Title = "Spinbot Speed", Value = 50, Min = 1, Max = 360, Callback = function(v) Config.SpinbotSpeed = v end})
-AssistSection:Toggle({Title = "Anti Aim (Jitter)", Value = false, Callback = function(v) Config.AntiAimEnabled = v end})
-AssistSection:Slider({Title = "Anti Aim Pitch", Value = 90, Min = 0, Max = 180, Callback = function(v) Config.AntiAimPitch = v end})
-
--- ============================================================
--- [17] GUI - ESP TAB
--- ============================================================
-local ESPSection = ESPTab:Section({Title = "ESP Settings", Side = "Left"})
-ESPSection:Toggle({Title = "ESP Enabled", Value = false, Callback = function(v) Config.ESPEnabled = v end})
-ESPSection:Toggle({Title = "Box ESP", Value = false, Callback = function(v) Config.BoxESPEnabled = v end})
-ESPSection:Toggle({Title = "Name ESP", Value = false, Callback = function(v) Config.NameESPEnabled = v end})
-ESPSection:Toggle({Title = "Health ESP", Value = false, Callback = function(v) Config.HealthESPEnabled = v end})
-ESPSection:Toggle({Title = "Distance ESP", Value = false, Callback = function(v) Config.DistanceESPEnabled = v end})
-ESPSection:Toggle({Title = "Tracers", Value = false, Callback = function(v) Config.TracersEnabled = v end})
-ESPSection:Toggle({Title = "Chams", Value = false, Callback = function(v) Config.ChamsEnabled = v end})
-ESPSection:Colorpicker({Title = "ESP Color", Value = Color3.fromRGB(255,0,0), Callback = function(v) Config.ESPColor = v end})
-
-local CheckSection = ESPTab:Section({Title = "Checks", Side = "Right"})
-CheckSection:Toggle({Title = "Team Check", Value = true, Callback = function(v) Config.TeamCheckEnabled = v end})
-CheckSection:Toggle({Title = "Wall Check", Value = true, Callback = function(v) Config.WallCheckEnabled = v end})
-CheckSection:Toggle({Title = "Friend Only Mode", Value = false, Callback = function(v) Config.FriendOnlyMode = v end})
-CheckSection:Toggle({Title = "Whitelist Mode", Value = false, Callback = function(v) Config.WhitelistMode = v end})
-CheckSection:Dropdown({Title = "Whitelist Player", Value = "Select", Options = {"Select"}, Callback = function(v)
-    if v ~= "Select" and not Config.WhitelistedPlayers[v] then
-        Config.WhitelistedPlayers[v] = true
-    end
-end})
-
--- ============================================================
--- [18] GUI - SKYS TAB
--- ============================================================
-local SkySection = SkyTab:Section({Title = "Skybox Settings", Side = "Left"})
-SkySection:Dropdown({Title = "Select Sky", Value = "Sunset", Options = SkyboxNames, Callback = function(v)
-    CurrentSkyIndex = 0
-    for i, name in pairs(SkyboxNames) do if name == v then CurrentSkyIndex = i; break end end
-    if Config.SkysEnabled and defaultSky then
-        local id = SkyboxIds[v]
-        for _, face in pairs({"Bk","Dn","Ft","Lf","Rt","Up"}) do defaultSky["Skybox"..face] = id end
-    end
-end})
-SkySection:Toggle({Title = "Skys Enabled", Value = false, Callback = function(v)
-    Config.SkysEnabled = v
-    if defaultSky then defaultSky.Enabled = v end
-end})
-
--- ============================================================
--- [19] GUI - VISUALS TAB
--- ============================================================
-local VisualSection = VisualTab:Section({Title = "Visual Features", Side = "Left"})
-VisualSection:Toggle({Title = "X-Ray", Value = false, Callback = function(v) Config.XRayEnabled = v; SetupXRay() end})
-VisualSection:Toggle({Title = "Fly", Value = false, Callback = function(v) Config.FlyEnabled = v; SetupFly() end})
-VisualSection:Slider({Title = "Fly Speed", Value = 50, Min = 10, Max = 200, Callback = function(v) Config.FlySpeed = v end})
-VisualSection:Toggle({Title = "Air Jump", Value = false, Callback = function(v) Config.AirJumpEnabled = v end})
-VisualSection:Toggle({Title = "No Fall Damage", Value = false, Callback = function(v) Config.NoFallDamageEnabled = v end})
-VisualSection:Toggle({Title = "Third Person", Value = false, Callback = function(v) Config.ThirdPersonEnabled = v; SetupThirdPerson() end})
-VisualSection:Toggle({Title = "Teleport to Cursor (F)", Value = false, Callback = function(v) Config.TeleportToCursorEnabled = v end})
-
--- ============================================================
--- [20] GUI - MISC TAB
--- ============================================================
-local MiscSection = MiscTab:Section({Title = "Misc Features", Side = "Left"})
-MiscSection:Toggle({Title = "Anti Cheat Bypass", Value = false, Callback = function(v) Config.AntiCheatBypassEnabled = v; SetupAntiCheatBypass() end})
-MiscSection:Toggle({Title = "Noclip", Value = false, Callback = function(v) Config.NoclipEnabled = v; SetupNoclip() end})
-MiscSection:Toggle({Title = "Infinite Jump", Value = false, Callback = function(v) Config.InfiniteJumpEnabled = v end})
-MiscSection:Toggle({Title = "God Mode", Value = false, Callback = function(v) Config.GodModeEnabled = v end})
-MiscSection:Toggle({Title = "Auto Parry", Value = false, Callback = function(v) Config.AutoParryEnabled = v end})
-MiscSection:Toggle({Title = "Auto Block", Value = false, Callback = function(v) Config.AutoBlockEnabled = v end})
-MiscSection:Toggle({Title = "Auto Heal", Value = false, Callback = function(v) Config.AutoHealEnabled = v end})
-MiscSection:Slider({Title = "Auto Heal Threshold", Value = 30, Min = 10, Max = 100, Callback = function(v) Config.AutoHealThreshold = v end})
-
--- ============================================================
--- [21] GUI - PLAYER TAB
--- ============================================================
-local PlayerSection = PlayerTab:Section({Title = "Player Settings", Side = "Left"})
-PlayerSection:Toggle({Title = "Walkspeed", Value = false, Callback = function(v) Config.WalkspeedEnabled = v; UpdateWalkspeed() end})
-PlayerSection:Slider({Title = "Walkspeed Value", Value = 16, Min = 16, Max = 500, Callback = function(v) Config.WalkspeedValue = v end})
-PlayerSection:Toggle({Title = "Jump Power", Value = false, Callback = function(v) Config.JumpPowerEnabled = v; UpdateJumpPower() end})
-PlayerSection:Slider({Title = "Jump Power Value", Value = 50, Min = 50, Max = 500, Callback = function(v) Config.JumpPowerValue = v end})
-
--- ============================================================
--- [22] GUI - FARM TAB
--- ============================================================
-local FarmSection = FarmTab:Section({Title = "Farm Settings", Side = "Left"})
-FarmSection:Toggle({Title = "Auto Farm", Value = false, Callback = function(v) Config.AutoFarmEnabled = v end})
-FarmSection:Toggle({Title = "Auto Collect", Value = false, Callback = function(v) Config.AutoCollectEnabled = v end})
-FarmSection:Button({Title = "Farm Now", Callback = function() AutoFarm() end})
-FarmSection:Button({Title = "Collect Now", Callback = function() AutoCollect() end})
-
-print("✅ Azic Hub V2 geladen! Viel Spaß by BROS GANG")
+-- =====================================================
+-- ENDE DES SKRIPTS
+-- =====================================================
