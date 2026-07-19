@@ -1080,23 +1080,16 @@ Tabs.Player:Toggle({
         Utility.Notify("Fly", v and "✅ Aktiviert" or "❌ Deaktiviert", 2)
     end
 })
-
-Tabs.Player:Slider({
-    Title = "Fly Speed",
-    Description = "Geschwindigkeit im Flugmodus",
+escription = "Geschwindigkeit im Flugmodus",
     Value = {Min = 10, Max = 200, Default = 50},
-    Callback = function(v)
-        Settings.Player.Fly.Speed = v
-    end
+    Callback = function(v) Settings.Player.Fly.Speed = v end
 })
 
 Tabs.Player:Slider({
     Title = "Fly Up Speed",
     Description = "Steiggeschwindigkeit",
     Value = {Min = 10, Max = 100, Default = 30},
-    Callback = function(v)
-        Settings.Player.Fly.UpSpeed = v
-    end
+    Callback = function(v) Settings.Player.Fly.UpSpeed = v end
 })
 
 -- =====================================================
@@ -1110,11 +1103,7 @@ Tabs.Visual:Toggle({
     Value = false,
     Callback = function(v)
         Settings.Visuals.NoFog = v
-        if v then
-            Lighting.FogEnd = 100000
-        else
-            Lighting.FogEnd = 1000
-        end
+        if v then Lighting.FogEnd = 100000 else Lighting.FogEnd = 1000 end
         PlaySound()
     end
 })
@@ -1191,9 +1180,7 @@ Tabs.Sky:Dropdown({
                 break
             end
         end
-        if Settings.Sky.Enabled then
-            SetSkybox(SkyboxIds[v])
-        end
+        if Settings.Sky.Enabled then SetSkybox(SkyboxIds[v]) end
         PlaySound()
     end
 })
@@ -1207,9 +1194,7 @@ Tabs.Sky:Button({
             return
         end
         Settings.Sky.CurrentIndex = Settings.Sky.CurrentIndex + 1
-        if Settings.Sky.CurrentIndex > #SkyboxData then
-            Settings.Sky.CurrentIndex = 1
-        end
+        if Settings.Sky.CurrentIndex > #SkyboxData then Settings.Sky.CurrentIndex = 1 end
         SetSkybox(SkyboxIds[SkyboxData[Settings.Sky.CurrentIndex]])
         Utility.Notify("🌤️ Sky", SkyboxData[Settings.Sky.CurrentIndex], 2, "🌤️")
         PlaySound()
@@ -1225,9 +1210,7 @@ Tabs.Sky:Button({
             return
         end
         Settings.Sky.CurrentIndex = Settings.Sky.CurrentIndex - 1
-        if Settings.Sky.CurrentIndex < 1 then
-            Settings.Sky.CurrentIndex = #SkyboxData
-        end
+        if Settings.Sky.CurrentIndex < 1 then Settings.Sky.CurrentIndex = #SkyboxData end
         SetSkybox(SkyboxIds[SkyboxData[Settings.Sky.CurrentIndex]])
         Utility.Notify("🌤️ Sky", SkyboxData[Settings.Sky.CurrentIndex], 2, "🌤️")
         PlaySound()
@@ -1238,9 +1221,7 @@ Tabs.Sky:Slider({
     Title = "Rotation Speed",
     Description = "Geschwindigkeit der Skybox-Rotation",
     Value = {Min = 0, Max = 2, Default = 0.5, Decimals = 1},
-    Callback = function(v)
-        Settings.Sky.RotationSpeed = v
-    end
+    Callback = function(v) Settings.Sky.RotationSpeed = v end
 })
 
 -- =====================================================
@@ -1255,11 +1236,7 @@ Tabs.Farm:Toggle({
     Callback = function(v)
         Settings.Farm.AutoFarm = v
         PlaySound()
-        if v then
-            Utility.Notify("🌾 Farm", "Auto-Farm aktiviert!", 2, "🌾")
-        else
-            Utility.Notify("🌾 Farm", "Auto-Farm deaktiviert!", 2, "🌾")
-        end
+        Utility.Notify("🌾 Farm", v and "✅ Aktiviert" or "❌ Deaktiviert", 2, "🌾")
     end
 })
 
@@ -1267,9 +1244,7 @@ Tabs.Farm:Slider({
     Title = "Collect Radius",
     Description = "Reichweite für das Farmen",
     Value = {Min = 10, Max = 100, Default = 50},
-    Callback = function(v)
-        Settings.Farm.CollectRadius = v
-    end
+    Callback = function(v) Settings.Farm.CollectRadius = v end
 })
 
 Tabs.Farm:Button({
@@ -1341,19 +1316,16 @@ Tabs.Misc:Button({
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
-    -- Insert = UI Toggle
     if input.KeyCode == Enum.KeyCode.Insert then
         Window:Toggle()
     end
     
-    -- Aimlock Key (E)
     if input.KeyCode == Settings.Aimlock.Key then
         Settings.Aimlock.Enabled = not Settings.Aimlock.Enabled
         PlaySound()
         Utility.Notify("🎯 Aimlock", Settings.Aimlock.Enabled and "✅ Aktiviert" or "❌ Deaktiviert", 2, "🎯")
     end
     
-    -- F1 = ESP Toggle
     if input.KeyCode == Enum.KeyCode.F1 then
         Settings.ESP.Enabled = not Settings.ESP.Enabled
         PlaySound()
@@ -1381,7 +1353,6 @@ print("📌 F1 = ESP Toggle | Insert = Menu | " .. tostring(Settings.Aimlock.Key
 -- MODUL 23: AUFRÄUMEN BEI CHARACTER CHANGE
 -- =====================================================
 Players.LocalPlayer.CharacterAdded:Connect(function()
-    -- Player Settings beim Respawn neu anwenden
     task.wait(0.5)
     ApplyPlayerSettings()
 end)
